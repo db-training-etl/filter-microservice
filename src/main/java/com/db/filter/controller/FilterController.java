@@ -45,6 +45,7 @@ public class FilterController {
         List<Trade> nonFilteredTrades = new ArrayList<>();
 
         if(enrichedData.isEmpty()){
+
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.BAD_REQUEST);
         }
 
@@ -61,10 +62,12 @@ public class FilterController {
 
         try {
             if(!filteredTrades.isEmpty()) {
-                FileWriter writer = new FileWriter("./src/main/resources/filtered-flowtype-" + destFormat.format(filteredTrades.get(0).getCobDate()).replace(":", "-") + ".csv");
+                FileWriter writer = new FileWriter("./src/main/resources/filtered-flowtype-"
+                        + destFormat.format(filteredTrades.get(0).getCobDate()).replace(":", "-") + ".csv");
                 ColumnPositionMappingStrategy mappingStrategy = new ColumnPositionMappingStrategy<>();
                 mappingStrategy.setType(Trade.class);
-                String[] columns = {"id", "tradeName", "bookId", "country", "counterpartyId", "currency", "cobDate", "amount", "tradeTax", "book", "counterparty"};
+                String[] columns = {"id", "tradeName", "bookId", "country", "counterpartyId", "currency",
+                        "cobDate", "amount", "tradeTax", "book", "counterparty"};
                 mappingStrategy.setColumnMapping(columns);
 
                 StatefulBeanToCsvBuilder<Trade> builder = new StatefulBeanToCsvBuilder(writer);
@@ -72,12 +75,11 @@ public class FilterController {
 
 
                 beanWriter.write(filteredTrades);
-
-
                 writer.close();
             }
         } catch (Exception e) {
             //throw exception and call exception service and send him the log
+
             throw new RuntimeException(e);
         }
 

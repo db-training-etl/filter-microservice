@@ -9,11 +9,13 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -117,8 +119,6 @@ class FilterControllerTest {
 
     @Test
     void postEnrichData(){
-
-
         ResponseEntity<HashMap<String,Object>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
         ResponseEntity<HashMap<String,Object>> expected = new ResponseEntity<HashMap<String,Object>>(filterData(inventedTrades), HttpStatus.CREATED);
 
@@ -136,7 +136,10 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichDataThrowIOExcpetion(){
+    void postEnrichDataThrowIOExcpetion() {
+        TimeZone utc = TimeZone.getTimeZone("UTC");
+        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
         List<Trade> trades = new ArrayList<>();
         Trade trade = new Trade();
         trade.setId(3);
@@ -145,7 +148,7 @@ class FilterControllerTest {
         trade.setCountry("aaaaa");
         trade.setCounterpartyId(counterparty.getCounterpartyId());
         trade.setCurrency("USD");
-        trade.setCobDate(Date.from(Instant.now()));
+        trade.setCobDate(null);
 
         trade.setAmount(0.0);
         trade.setTradeTax(true);
@@ -156,10 +159,7 @@ class FilterControllerTest {
 
         inventedTrades.put("trades",trades);
 
-        ResponseEntity<HashMap<String,Object>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
-
-        ResponseEntity<HashMap<String,Object>> expected = new ResponseEntity<HashMap<String,Object>>(filterData(inventedTrades), HttpStatus.BAD_REQUEST);
-        assertEquals(expected,enrichDataResponse);
+        assertThrows(RuntimeException.class,()->filterController.postEnrichData(inventedTrades));
 
     }
 
