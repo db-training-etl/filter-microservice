@@ -3,43 +3,49 @@ package com.db.filter.controller;
 import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
-import com.db.filter.service.FilterService;
+import com.db.filter.service.ExceptionsService;
+import com.db.filter.service.TransformService;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.FileWriter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 
 class FilterControllerTest {
 
     FilterController filterController;
 
 
-    HashMap<String,Object> inventedTrades;
+    TransformService trasformService;
+    ExceptionsService exceptionsService;
+
+    List<Trade> inventedTrades;
     Counterparty counterparty;
     Book book;
 
     @BeforeEach
     void setUp(){
-        filterController = new FilterController();
+        trasformService = mock(TransformService.class);
+        exceptionsService = mock(ExceptionsService.class);
+        filterController = new FilterController(trasformService,exceptionsService);
 
 
-        inventedTrades = new HashMap<>();
+
+        inventedTrades = new ArrayList<>();
         counterparty = new Counterparty();
         counterparty.setCounterpartyId(0);
         counterparty.setEntity("richman");
@@ -65,8 +71,8 @@ class FilterControllerTest {
         trade.setBook(book);
         trade.setCounterparty(counterparty);
 
-        List<Trade> trades = new ArrayList<>();
-        trades.add(trade);
+
+        inventedTrades.add(trade);
 
         trade = new Trade();
         trade.setId(1);
@@ -81,7 +87,7 @@ class FilterControllerTest {
         trade.setBook(book);
         trade.setCounterparty(counterparty);
 
-        trades.add(trade);
+        inventedTrades.add(trade);
 
         trade = new Trade();
         trade.setId(2);
@@ -96,7 +102,7 @@ class FilterControllerTest {
         trade.setBook(book);
         trade.setCounterparty(counterparty);
 
-        trades.add(trade);
+        inventedTrades.add(trade);
 
         trade = new Trade();
         trade.setId(3);
@@ -112,35 +118,43 @@ class FilterControllerTest {
         trade.setBook(book);
         trade.setCounterparty(counterparty);
 
-        trades.add(trade);
+        inventedTrades.add(trade);
 
-        inventedTrades.put("trades",trades);
+
     }
 
     @Test
     void postEnrichData(){
-        ResponseEntity<HashMap<String,Object>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
-        ResponseEntity<HashMap<String,Object>> expected = new ResponseEntity<HashMap<String,Object>>(filterData(inventedTrades), HttpStatus.CREATED);
+        List<Trade> expectedResultFromService = new ArrayList<>();
+        given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+
+        ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
+        ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(inventedTrades), HttpStatus.CREATED);
 
         assertEquals(expected,enrichDataResponse);
     }
 
     @Test
     void postEnrichDataThrowExceptionNoRequestedBody(){
-        HashMap<String,Object> emptyResponse = new HashMap<>();
+        List<Trade> emptyResponse = new ArrayList<>();
+        List<Trade> expectedResultFromService = new ArrayList<>();
+        given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+        given(exceptionsService.postException()).willReturn(expectedResultFromService);
 
-
-        ResponseEntity<HashMap<String,Object>> enrichDataResponse = filterController.postEnrichData(emptyResponse);
-        ResponseEntity<HashMap<String,Object>> expected = new ResponseEntity<HashMap<String,Object>>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
+        ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(emptyResponse);
+        ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
         assertEquals(expected,enrichDataResponse);
     }
 
     @Test
     void postEnrichDataThrowIOExcpetion() {
+        List<Trade> expectedResultFromService = new ArrayList<>();
+        given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+
         TimeZone utc = TimeZone.getTimeZone("UTC");
         SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        inventedTrades= new ArrayList<>();
 
-        List<Trade> trades = new ArrayList<>();
         Trade trade = new Trade();
         trade.setId(3);
         trade.setTradeName("test3");
@@ -149,21 +163,18 @@ class FilterControllerTest {
         trade.setCounterpartyId(counterparty.getCounterpartyId());
         trade.setCurrency("USD");
         trade.setCobDate(null);
-
         trade.setAmount(0.0);
         trade.setTradeTax(true);
         trade.setBook(book);
         trade.setCounterparty(counterparty);
 
-        trades.add(trade);
-
-        inventedTrades.put("trades",trades);
+        inventedTrades.add(trade);
 
         assertThrows(RuntimeException.class,()->filterController.postEnrichData(inventedTrades));
 
     }
 
-    private HashMap<String,Object> filterData(HashMap<String,Object> data){
+    private List<Trade> filterData(List<Trade> data){
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
 
@@ -174,12 +185,12 @@ class FilterControllerTest {
         List<Trade> nonFilteredTrades = new ArrayList<>();
 
         if(data.isEmpty()){
-            return new HashMap<>();
+            return new ArrayList<>();
         }
 
-        List<Trade> trades = (List<Trade>) data.get("trades");
 
-        for (Trade trade: trades) {
+
+        for (Trade trade: data) {
 
             if(trade.getAmount()>0 && trade.getCurrency()!="JPN"){
                 nonFilteredTrades.add(trade);
@@ -211,7 +222,7 @@ class FilterControllerTest {
             throw new RuntimeException(e);
         }
 
-        filteredData.put("trades",nonFilteredTrades);
-        return filteredData;
+
+        return nonFilteredTrades;
     }
 }
