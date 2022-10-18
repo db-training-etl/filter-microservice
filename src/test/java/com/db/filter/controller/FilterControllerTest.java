@@ -5,12 +5,12 @@ import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.ExceptionsService;
 import com.db.filter.service.TransformService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -124,7 +124,7 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichData(){
+    void postEnrichData() throws JsonProcessingException {
         List<Trade> expectedResultFromService = new ArrayList<>();
         given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 
@@ -135,11 +135,13 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichDataThrowExceptionNoRequestedBody(){
+    void postEnrichDataThrowExceptionNoRequestedBody() throws JsonProcessingException {
         List<Trade> emptyResponse = new ArrayList<>();
-        List<Trade> expectedResultFromService = new ArrayList<>();
-        given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
-        given(exceptionsService.postException()).willReturn(expectedResultFromService);
+        ResponseEntity<Exception> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
+
+        given(trasformService.postFilteredData(emptyResponse)).willReturn(emptyResponse);
+
+        given(exceptionsService.postException("name", "type", "message", "trace", Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
         ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(emptyResponse);
         ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
@@ -147,7 +149,7 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichDataThrowIOExcpetion() {
+    void postEnrichDataThrowExcpetion() throws JsonProcessingException {
         List<Trade> expectedResultFromService = new ArrayList<>();
         given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 

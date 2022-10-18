@@ -2,6 +2,7 @@ package com.db.filter.controller;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.ExceptionsService;
 import com.db.filter.service.TransformService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 
 @RestController
@@ -42,7 +44,15 @@ public class FilterController {
         List<Trade> nonFilteredTrades = new ArrayList<>();
 
         if(enrichedData.isEmpty()){
-
+            //Exception exception = new Exception();
+            StackTraceElement stackTraceElement = new StackTraceElement("FilterController","postEnrichData","FilterController.java",46);
+            //exception.setStackTrace(new StackTraceElement[]{stackTraceElement});
+            String name = "";
+            String type = "Bad Request";
+            String message = "";
+            String trace = "";
+            Date cobDate = Date.from(Instant.now());
+            exceptionsService.postException(name,type,message,trace,cobDate);
             return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
         }
 
@@ -86,7 +96,11 @@ public class FilterController {
         ResponseEntity<List<Trade>> response = new ResponseEntity<>(ddbbEnrichedData, HttpStatus.CREATED);
 
         //Call next service to store data in a XML
-        transformService.postFilteredData(ddbbEnrichedData);
+        try {
+            transformService.postFilteredData(ddbbEnrichedData);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         return response;
     }
