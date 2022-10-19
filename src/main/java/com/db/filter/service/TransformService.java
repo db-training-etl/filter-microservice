@@ -3,6 +3,8 @@ package com.db.filter.service;
 import com.db.filter.entity.Trade;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -10,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 
 @Service
+@Data
 public class TransformService {
 
     WebClient webClient;

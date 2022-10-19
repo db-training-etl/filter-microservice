@@ -34,8 +34,6 @@ class TransformServiceTest {
         responseHeaders.set("Content-Type","application/json");
         responseHeaders.set("content-length","22204");
 
-
-
         expectedResponse = new ArrayList<>();
         Trade trade = new Trade();
         expectedResponse.add(trade);

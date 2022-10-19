@@ -44,9 +44,6 @@ public class FilterController {
         List<Trade> nonFilteredTrades = new ArrayList<>();
 
         if(enrichedData.isEmpty()){
-            //Exception exception = new Exception();
-            StackTraceElement stackTraceElement = new StackTraceElement("FilterController","postEnrichData","FilterController.java",46);
-            //exception.setStackTrace(new StackTraceElement[]{stackTraceElement});
             String name = "";
             String type = "Bad Request";
             String message = "";
@@ -86,7 +83,12 @@ public class FilterController {
             }
         } catch (Exception e) {
             //throw exception and call exception service and send him the log
-
+            String name = "";
+            String type = "Runtime Exception";
+            String message = "";
+            String trace = "";
+            Date cobDate = Date.from(Instant.now());
+            exceptionsService.postException(name,type,message,trace,cobDate);
 
             throw new RuntimeException(e);
         }
@@ -99,6 +101,12 @@ public class FilterController {
         try {
             transformService.postFilteredData(ddbbEnrichedData);
         } catch (JsonProcessingException e) {
+            String name = "";
+            String type = "Runtime Exception";
+            String message = "";
+            String trace = "";
+            Date cobDate = Date.from(Instant.now());
+            exceptionsService.postException(name,type,message,trace,cobDate);
             throw new RuntimeException(e);
         }
 

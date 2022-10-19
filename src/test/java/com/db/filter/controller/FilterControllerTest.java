@@ -6,11 +6,13 @@ import com.db.filter.entity.Trade;
 import com.db.filter.service.ExceptionsService;
 import com.db.filter.service.TransformService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,6 +23,7 @@ import java.util.*;
 
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -30,18 +33,20 @@ class FilterControllerTest {
     FilterController filterController;
 
 
-    TransformService trasformService;
+    TransformService transformService;
     ExceptionsService exceptionsService;
 
     List<Trade> inventedTrades;
     Counterparty counterparty;
     Book book;
 
+
+
     @BeforeEach
     void setUp(){
-        trasformService = mock(TransformService.class);
+        transformService = mock(TransformService.class);
         exceptionsService = mock(ExceptionsService.class);
-        filterController = new FilterController(trasformService,exceptionsService);
+        filterController = new FilterController(transformService,exceptionsService);
 
 
 
@@ -126,7 +131,7 @@ class FilterControllerTest {
     @Test
     void postEnrichData() throws JsonProcessingException {
         List<Trade> expectedResultFromService = new ArrayList<>();
-        given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 
         ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
         ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(inventedTrades), HttpStatus.CREATED);
@@ -139,7 +144,7 @@ class FilterControllerTest {
         List<Trade> emptyResponse = new ArrayList<>();
         ResponseEntity<Exception> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
 
-        given(trasformService.postFilteredData(emptyResponse)).willReturn(emptyResponse);
+        given(transformService.postFilteredData(emptyResponse)).willReturn(emptyResponse);
 
         given(exceptionsService.postException("name", "type", "message", "trace", Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
@@ -151,7 +156,7 @@ class FilterControllerTest {
     @Test
     void postEnrichDataThrowExcpetion() throws JsonProcessingException {
         List<Trade> expectedResultFromService = new ArrayList<>();
-        given(trasformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
         SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -176,6 +181,14 @@ class FilterControllerTest {
 
     }
 
+    @Test
+    void postEnrichDataThrowJsonProcessingException() throws JsonProcessingException {
+
+        given(transformService.postFilteredData(any())).willThrow(new JsonProcessingException("Error"){});
+
+        assertThrows(RuntimeException.class,()->filterController.postEnrichData(inventedTrades));
+
+    }
     private List<Trade> filterData(List<Trade> data){
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
