@@ -34,7 +34,7 @@ public class ExceptionsService {
         requestBody.put("cobDate",cobDate);
 
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder.path("configuration").build())
+                .uri(uriBuilder -> uriBuilder.path("exceptions/save").build())
                 .body(BodyInserters.fromValue(requestBody))
                 .retrieve()
                 .toEntity(Exception.class)

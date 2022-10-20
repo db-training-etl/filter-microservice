@@ -33,7 +33,7 @@ public class FilterController {
 
 
 
-    @PostMapping("/SaveEnrichedData")
+    @PostMapping("/Trades/filter")
     public ResponseEntity<List<Trade>> postEnrichData(@RequestBody List<Trade> enrichedData) {
         ddbbEnrichedData = new ArrayList<>();
         //prepare date formatter
@@ -52,8 +52,6 @@ public class FilterController {
             exceptionsService.postException(name,type,message,trace,cobDate);
             return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
         }
-
-       // List<Trade> trades = (List<Trade>) enrichedData.get("trades");
 
         for (Trade trade: enrichedData) {
 
@@ -112,4 +110,5 @@ public class FilterController {
 
         return response;
     }
+
 }
