@@ -1,5 +1,6 @@
 package com.db.filter.service;
 
+import com.db.filter.repository.ExceptionsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
@@ -7,13 +8,10 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,11 +22,14 @@ class ExceptionsServiceTest {
     public MockWebServer mockBackEnd;
     ResponseEntity<Exception> expectedResponse;
 
+    ExceptionsRepository exceptionsRepository;
+
     @BeforeEach
     void setUp(){
+        exceptionsRepository = new ExceptionsRepository();
         mockBackEnd = new MockWebServer();
         objectMapper = new ObjectMapper();
-        exceptionsService = new ExceptionsService(mockBackEnd.url("/").url().toString());
+        exceptionsService = new ExceptionsService(mockBackEnd.url("/").url().toString(), exceptionsRepository);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-Type","application/json");
