@@ -44,12 +44,7 @@ public class FilterController {
         List<Trade> nonFilteredTrades = new ArrayList<>();
 
         if(enrichedData.isEmpty()){
-            String name = "";
-            String type = "Bad Request";
-            String message = "";
-            String trace = "";
-            Date cobDate = Date.from(Instant.now());
-            exceptionsService.postException(name,type,message,trace,cobDate);
+            sendException("","Runtime Exception","","",Date.from(Instant.now()));
             return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
         }
 
@@ -81,13 +76,7 @@ public class FilterController {
             }
         } catch (Exception e) {
             //throw exception and call exception service and send him the log
-            String name = "";
-            String type = "Runtime Exception";
-            String message = "";
-            String trace = "";
-            Date cobDate = Date.from(Instant.now());
-            exceptionsService.postException(name,type,message,trace,cobDate);
-
+            sendException("","Runtime Exception","","",Date.from(Instant.now()));
             throw new RuntimeException(e);
         }
 
@@ -99,16 +88,15 @@ public class FilterController {
         try {
             transformService.postFilteredData(ddbbEnrichedData);
         } catch (JsonProcessingException e) {
-            String name = "";
-            String type = "Runtime Exception";
-            String message = "";
-            String trace = "";
-            Date cobDate = Date.from(Instant.now());
-            exceptionsService.postException(name,type,message,trace,cobDate);
+            sendException("","Runtime Exception","","",Date.from(Instant.now()));
             throw new RuntimeException(e);
         }
 
         return response;
+    }
+
+    private void sendException(String name,String type, String message,String trace, Date cobDate) {
+        exceptionsService.postException(name,type,message,trace,cobDate);
     }
 
 }
