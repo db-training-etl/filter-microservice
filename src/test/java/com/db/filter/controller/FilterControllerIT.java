@@ -133,6 +133,7 @@ public class FilterControllerIT {
     @Test
     void postEnrichedData() throws Exception {
         //GIVEN
+        ResponseEntity<List<Trade>> result = new ResponseEntity<>(inventedTrades,HttpStatus.CREATED);
 
         given(transformService.postFilteredData(inventedTrades)).willReturn(inventedTrades);
         //WHEN
