@@ -1,9 +1,9 @@
 package com.db.filter.service;
 
-import com.db.filter.repository.ResponseEntityRequestRepository;
-import com.db.filter.repository.ExceptionsRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -11,19 +11,18 @@ import java.util.HashMap;
 @Service
 public class ExceptionsService {
 
-    //WebClient webClient;
-    ResponseEntityRequestRepository responseEntityRequestRepository;
+    WebClient webClient;
+
     String baseUrl;
 
     public ExceptionsService(){
         this.baseUrl = "http://localhost:8089/";//need to change
-        responseEntityRequestRepository = new ExceptionsRepository();
-        //webClient = WebClient.create(baseUrl);
+        webClient = WebClient.create(baseUrl);
     }
 
-    public ExceptionsService(String baseUrl, ResponseEntityRequestRepository responseEntityRequestRepository) {
+    public ExceptionsService(String baseUrl) {
         this.baseUrl = baseUrl;
-        this.responseEntityRequestRepository = responseEntityRequestRepository;
+        webClient = WebClient.create(baseUrl);
     }
 
     public ResponseEntity<Exception> postException(String name, String type, String message, String trace, Date cobDate) {
@@ -34,6 +33,11 @@ public class ExceptionsService {
         requestBody.put("trace",trace);
         requestBody.put("cobDate",cobDate);
 
-        return responseEntityRequestRepository.makePostRequest(baseUrl,"exceptions/save",requestBody);
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder.path("exceptions/save").build())
+                .body(BodyInserters.fromValue(requestBody))
+                .retrieve()
+                .toEntity(Exception.class)
+                .block();
     }
 }
