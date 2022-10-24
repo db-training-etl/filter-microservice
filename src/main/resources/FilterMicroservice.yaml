@@ -6,100 +6,96 @@ info:
 servers:
   - url: 'https'
 paths:
-    /Trades/filter:
-      post:
-        summary: Filter enriched trades
-        description: Filter enriched trades
-        operationId: filterEnrichedTrades
-        tags:
-          - Filter
-        requestBody:
-          description: Enriched trades
+  /trades/filter:
+    post:
+      summary: Filter enriched trades
+      description: Filter enriched trades
+      operationId: filterEnrichedTrades
+      tags:
+        - Filter
+      requestBody:
+        description: Enriched trades
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterTradesRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FilterTradesRequest'
-          required: true
-        responses:
-          '201':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/FilterTradesResponse'
-          '400':
-            description: Invalid input
-          '500':
-            description: Internal error
-   
+                $ref: '#/components/schemas/FilterTradesResponse'
+        '400':
+          description: Invalid input
+        '500':
+          description: Internal error
+
 components:
-    schemas:
+  schemas:
     
-        FilterTradesRequest:
+    FilterTradesRequest:
+      type: object
+      properties:
+        FilterTrade:
+          $ref: '#/components/schemas/Trade'
+
+    FilterTradesResponse:
+      type: object
+      properties:
+        FilterTrade:
+          $ref: '#/components/schemas/Trade'
+    Trade:
+      type: object
+      properties:
+        tradeId:
+          type: string
+        tradeName:
+          type: string
+        bookId:
+          type: integer
+        country:
+          type: string
+        counterpartyId:
+          type: integer
+        currency:
+          type: number
+        cobDate:
+          type: string
+        amount:
+          type: integer
+        tradeTax:
+          type: boolean
+        counterparties:
           type: object
           properties:
-            FilterTrades:
-              type: array
-              items:
-                $ref: '#/components/schemas/Trade'
-        
-        FilterTradesResponse:
+            Counterparty:
+              $ref: '#/components/schemas/Counterparty'
+        book:
           type: object
           properties:
-            FilterTrades:
-              type: array
-              items:
-                $ref: '#/components/schemas/Trade'
-        Trade:
-          type: object
-          properties:
-              tradeId:
-                type: string
-              tradeName:
-                type: string
-              bookId:
-                type: integer
-              country:
-                type: string
-              counterpartyId:
-                type: integer
-              currency:
-                type: number
-              cobDate:
-                type: string
-              amount:
-                type: integer
-              tradeTax:
-                type: boolean
-              counterparties:
-                type: object
-                properties:
-                  Counterparty:
-                      $ref: '#/components/schemas/Counterparty'
-              book:
-                type: object
-                properties:
-                  book:
-                      $ref: '#/components/schemas/Book'
-        Counterparty:
-          type: object
-          properties:
-            counterpartyId:
-              type: integer
-            counterpartyName:
-              type: string
-            source:
-              type: string
-            entity:
-              type: string
-        Book:
-         type: object
-         properties:
-            bookId:
-              type: integer
-            bookName:
-              type: string
-            bookAddress:
-              type: string
-            entity:
-              type: string
+            book:
+              $ref: '#/components/schemas/Book'
+    Counterparty:
+      type: object
+      properties:
+        counterpartyId:
+          type: integer
+        counterpartyName:
+          type: string
+        source:
+          type: string
+        entity:
+          type: string
+    Book:
+      type: object
+      properties:
+        bookId:
+          type: integer
+        bookName:
+          type: string
+        bookAddress:
+          type: string
+        entity:
+          type: string
