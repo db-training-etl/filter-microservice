@@ -4,15 +4,14 @@ import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.ExceptionsService;
+import com.db.filter.service.FilterService;
 import com.db.filter.service.TransformService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,8 +20,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -35,19 +34,19 @@ class FilterControllerTest {
 
     TransformService transformService;
     ExceptionsService exceptionsService;
+    FilterService filterService;
 
     List<Trade> inventedTrades;
     Counterparty counterparty;
     Book book;
 
 
-
     @BeforeEach
-    void setUp(){
+    void setUp() {
         transformService = mock(TransformService.class);
         exceptionsService = mock(ExceptionsService.class);
-        filterController = new FilterController(transformService,exceptionsService);
-
+        filterService = mock(FilterService.class);
+        filterController = new FilterController(filterService);
 
 
         inventedTrades = new ArrayList<>();
@@ -130,92 +129,53 @@ class FilterControllerTest {
 
     @Test
     void postEnrichData() throws JsonProcessingException {
-        List<Trade> expectedResultFromService = new ArrayList<>();
-        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+        given(filterService.filterData(inventedTrades)).willReturn(filterData(inventedTrades));
 
         ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
         ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(inventedTrades), HttpStatus.CREATED);
 
-        assertEquals(expected,enrichDataResponse);
+        assertEquals(expected, enrichDataResponse);
     }
 
     @Test
     void postEnrichDataThrowExceptionNoRequestedBody() throws JsonProcessingException {
         List<Trade> emptyResponse = new ArrayList<>();
-        ResponseEntity<Exception> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
 
-        given(transformService.postFilteredData(emptyResponse)).willReturn(emptyResponse);
-
-        given(exceptionsService.postException("name", "type", "message", "trace", Date.from(Instant.now()))).willReturn(expectedResultFromService);
+        given(filterService.filterData(emptyResponse)).willReturn(emptyResponse);
 
         ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(emptyResponse);
         ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
-        assertEquals(expected,enrichDataResponse);
+        assertEquals(expected, enrichDataResponse);
     }
 
-    @Test
-    void postEnrichDataThrowExcpetion() throws JsonProcessingException {
-        List<Trade> expectedResultFromService = new ArrayList<>();
-        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        inventedTrades= new ArrayList<>();
 
-        Trade trade = new Trade();
-        trade.setId(3);
-        trade.setTradeName("test3");
-        trade.setBookId(book.getBookId());
-        trade.setCountry("aaaaa");
-        trade.setCounterpartyId(counterparty.getCounterpartyId());
-        trade.setCurrency("USD");
-        trade.setCobDate(null);
-        trade.setAmount(0.0);
-        trade.setTradeTax(true);
-        trade.setBook(book);
-        trade.setCounterparty(counterparty);
-
-        inventedTrades.add(trade);
-
-        assertThrows(RuntimeException.class,()->filterController.postEnrichData(inventedTrades));
-
-    }
-
-    @Test
-    void postEnrichDataThrowJsonProcessingException() throws JsonProcessingException {
-
-        given(transformService.postFilteredData(any())).willThrow(new JsonProcessingException("Error"){});
-
-        assertThrows(RuntimeException.class,()->filterController.postEnrichData(inventedTrades));
-
-    }
-    private List<Trade> filterData(List<Trade> data){
+    private List<Trade> filterData(List<Trade> data) {
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
 
         SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        HashMap<String,Object> filteredData = new HashMap<>();
+        HashMap<String, Object> filteredData = new HashMap<>();
 
         List<Trade> filteredTrades = new ArrayList<>();
         List<Trade> nonFilteredTrades = new ArrayList<>();
 
-        if(data.isEmpty()){
+        if (data.isEmpty()) {
             return new ArrayList<>();
         }
 
 
+        for (Trade trade : data) {
 
-        for (Trade trade: data) {
-
-            if(trade.getAmount()>0 && trade.getCurrency()!="JPN"){
+            if (trade.getAmount() > 0 && "JPN".equals(trade.getCurrency())) {
                 nonFilteredTrades.add(trade);
-            }else{
+            } else {
                 filteredTrades.add(trade);
             }
         }
 
         try {
-            if(!filteredTrades.isEmpty()) {
+            if (!filteredTrades.isEmpty()) {
                 FileWriter writer = new FileWriter("./src/test/resources/filtered-flowtype-" + destFormat.format(filteredTrades.get(0).getCobDate()).replace(":", "-") + ".csv");
                 ColumnPositionMappingStrategy mappingStrategy = new ColumnPositionMappingStrategy<>();
                 mappingStrategy.setType(Trade.class);
