@@ -1,17 +1,15 @@
-package com.db.filter.controller;
+package com.db.filter.service;
 
 import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
-import com.db.filter.service.ExceptionsService;
-import com.db.filter.service.FilterService;
-import com.db.filter.service.TransformService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -20,34 +18,32 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+class FilterServiceTest {
 
-class FilterControllerTest {
-
-    FilterController filterController;
+    FilterService filterService;
 
 
     TransformService transformService;
-    ExceptionsService exceptionsService;
-    FilterService filterService;
 
+
+    ExceptionsService exceptionsService;
     List<Trade> inventedTrades;
     Counterparty counterparty;
     Book book;
 
-
     @BeforeEach
-    void setUp() {
+    void setUp(){
         transformService = mock(TransformService.class);
         exceptionsService = mock(ExceptionsService.class);
-        filterService = mock(FilterService.class);
-        filterController = new FilterController(filterService);
-
+        filterService = new FilterService(transformService,exceptionsService);
 
         inventedTrades = new ArrayList<>();
         counterparty = new Counterparty();
@@ -123,32 +119,66 @@ class FilterControllerTest {
         trade.setCounterparty(counterparty);
 
         inventedTrades.add(trade);
+    }
 
+    @Test
+    void filterData() throws JsonProcessingException {
+
+        given(transformService.postFilteredData(filterData(inventedTrades))).willReturn(filterData(inventedTrades));
+
+        List<Trade> actual = filterService.filterData(inventedTrades);
+        List<Trade> expected = filterData(inventedTrades);
+
+        assertEquals(expected,actual);
+    }
+
+    @Test
+    void filterDataSendEmptyBody() throws JsonProcessingException {
+
+        ResponseEntity<Exception> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
+        given(transformService.postFilteredData(new ArrayList<>())).willReturn(new ArrayList<>());
+        given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
+
+        List<Trade> actual = filterService.filterData(new ArrayList<>());
+        List<Trade> expected = filterData(new ArrayList<>());
+
+        assertEquals(expected,actual);
 
     }
 
     @Test
-    void postEnrichData() throws JsonProcessingException {
-        given(filterService.filterData(inventedTrades)).willReturn(filterData(inventedTrades));
+    void filterDataThrowException() throws JsonProcessingException {
+        List<Trade> expectedResultFromService = new ArrayList<>();
+        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 
-        ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
-        ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(inventedTrades), HttpStatus.CREATED);
+        TimeZone utc = TimeZone.getTimeZone("UTC");
+        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        inventedTrades= new ArrayList<>();
 
-        assertEquals(expected, enrichDataResponse);
+        Trade trade = new Trade();
+        trade.setId(3);
+        trade.setTradeName("test3");
+        trade.setBookId(book.getBookId());
+        trade.setCountry("aaaaa");
+        trade.setCounterpartyId(counterparty.getCounterpartyId());
+        trade.setCurrency("USD");
+        trade.setCobDate(null);
+        trade.setAmount(0.0);
+        trade.setTradeTax(true);
+        trade.setBook(book);
+        trade.setCounterparty(counterparty);
+
+        inventedTrades.add(trade);
+
+        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades));
     }
 
     @Test
-    void postEnrichDataThrowExceptionNoRequestedBody() throws JsonProcessingException {
-        List<Trade> emptyResponse = new ArrayList<>();
+    void filterDataThrowJsonProcessingException() throws JsonProcessingException {
+        given(transformService.postFilteredData(any())).willThrow(new JsonProcessingException("Error"){});
 
-        given(filterService.filterData(emptyResponse)).willReturn(emptyResponse);
-
-        ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(emptyResponse);
-        ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
-        assertEquals(expected, enrichDataResponse);
+        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades));
     }
-
-
 
     private List<Trade> filterData(List<Trade> data) {
 
@@ -167,7 +197,7 @@ class FilterControllerTest {
 
         for (Trade trade : data) {
 
-            if (trade.getAmount() > 0 && "JPN".equals(trade.getCurrency())) {
+            if (trade.getAmount() > 0 && !"JPN".equals(trade.getCurrency())) {
                 nonFilteredTrades.add(trade);
             } else {
                 filteredTrades.add(trade);
@@ -200,4 +230,6 @@ class FilterControllerTest {
 
         return nonFilteredTrades;
     }
+
+
 }
