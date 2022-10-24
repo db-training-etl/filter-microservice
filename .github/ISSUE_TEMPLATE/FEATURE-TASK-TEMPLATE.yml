@@ -1,0 +1,30 @@
+name: Feature
+description: Request a task to be completed
+title: "feat: <title>"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    attributes:
+      label: Acceptance Criteria
+      description: Describe the feature
+      placeholder: |
+        GIVEN I am a user
+        WHEN I do something
+        THEN I expect something
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the feature request here.
+      placeholder: |
+        Add any other context or screenshots about the feature request here.
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: Story Points
+      description: How many story points is this issue worth?
+      placeholder: "e.g. 1, 2, 3"
+    validations:
+      required: false
