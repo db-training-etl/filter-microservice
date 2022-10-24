@@ -45,6 +45,14 @@ public class FilterService {
             }
         }
 
+        createFileWithFilteredData(destFormat, filteredTrades);
+
+        sendDataToTransformService(nonFilteredTrades);
+
+        return nonFilteredTrades;
+    }
+
+    private void createFileWithFilteredData(SimpleDateFormat destFormat, List<Trade> filteredTrades) {
         try {
             if(!filteredTrades.isEmpty()) {
                 FileWriter writer = new FileWriter("./src/main/resources/filtered-flowtype-"
@@ -68,18 +76,17 @@ public class FilterService {
             sendException("","Runtime Exception","","",Date.from(Instant.now()));
             throw new RuntimeException(e);
         }
+    }
 
-        //Call next service to store data in a XML
-
+    private void sendDataToTransformService(List<Trade> nonFilteredTrades) {
         try {
             transformService.postFilteredData(nonFilteredTrades);
         } catch (JsonProcessingException e) {
             sendException("","Runtime Exception","","",Date.from(Instant.now()));
             throw new RuntimeException(e);
         }
-
-        return nonFilteredTrades;
     }
+
     private void sendException(String name,String type, String message,String trace, Date cobDate) {
         exceptionsService.postException(name,type,message,trace,cobDate);
     }
