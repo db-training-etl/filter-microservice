@@ -1,0 +1,2 @@
+id;tradeName;bookId;country;counterpartyId;currency;cobDate;amount;tradeTax;book;counterparty
+1;test2;0;aaaaa;0;USD;Wed Oct 26 13:01:19 UTC 2022;0.0;true;Book(bookId=0, bookName=Santander, bookAddress=hola, entity=entity test);Counterparty(counterpartyId=0, counterpartyName=aaaaa, source=aaaa, entity=richman)

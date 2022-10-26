@@ -29,13 +29,13 @@ public class TransformService {
         objectMapper = new ObjectMapper();
     }
 
-    public List postFilteredData(List<Trade> filteredData) throws JsonProcessingException {
+    public Trade postFilteredData(Trade trade) throws JsonProcessingException {
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path("configuration").build())
-                .body(BodyInserters.fromValue(objectMapper.writeValueAsString(filteredData)))
+                .body(BodyInserters.fromValue(objectMapper.writeValueAsString(trade)))
                 .retrieve()
-                .bodyToMono(List.class)
+                .bodyToMono(Trade.class)
                 .block();
     }
 }

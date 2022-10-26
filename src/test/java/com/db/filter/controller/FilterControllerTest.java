@@ -129,54 +129,50 @@ class FilterControllerTest {
 
     @Test
     void postEnrichData() throws JsonProcessingException {
-        given(filterService.filterData(inventedTrades)).willReturn(filterData(inventedTrades));
+        given(filterService.filterData(inventedTrades.get(0))).willReturn(filterData(inventedTrades.get(0)));
 
-        ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(inventedTrades);
-        ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(inventedTrades), HttpStatus.CREATED);
+        ResponseEntity<Trade> enrichDataResponse = filterController.postEnrichData(inventedTrades.get(0));
+        ResponseEntity<Trade> expected = new ResponseEntity<Trade>(filterData(inventedTrades.get(0)), HttpStatus.CREATED);
 
         assertEquals(expected, enrichDataResponse);
     }
 
     @Test
     void postEnrichDataThrowExceptionNoRequestedBody() throws JsonProcessingException {
-        List<Trade> emptyResponse = new ArrayList<>();
+        Trade emptyResponse = new Trade();
 
         given(filterService.filterData(emptyResponse)).willReturn(emptyResponse);
 
-        ResponseEntity<List<Trade>> enrichDataResponse = filterController.postEnrichData(emptyResponse);
-        ResponseEntity<List<Trade>> expected = new ResponseEntity<List<Trade>>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
+        ResponseEntity<Trade> enrichDataResponse = filterController.postEnrichData(emptyResponse);
+        ResponseEntity<Trade> expected = new ResponseEntity<Trade>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
         assertEquals(expected, enrichDataResponse);
     }
 
 
 
-    private List<Trade> filterData(List<Trade> data) {
+    private Trade filterData(Trade data) {
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
 
-        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        HashMap<String, Object> filteredData = new HashMap<>();
+        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        List<Trade> filteredTrades = new ArrayList<>();
-        List<Trade> nonFilteredTrades = new ArrayList<>();
+        if (data.equals(new Trade()) || data==null) {
+            return new Trade();
+        }
+        boolean isFiltered;
 
-        if (data.isEmpty()) {
-            return new ArrayList<>();
+
+
+        if (data.getAmount() > 0 && !"JPN".equals(data.getCurrency())) {
+            isFiltered=false;
+        } else {
+            isFiltered=true;
         }
 
-
-        for (Trade trade : data) {
-
-            if (trade.getAmount() > 0 && "JPN".equals(trade.getCurrency())) {
-                nonFilteredTrades.add(trade);
-            } else {
-                filteredTrades.add(trade);
-            }
-        }
 
         try {
-            if (!filteredTrades.isEmpty()) {
-                FileWriter writer = new FileWriter("./src/test/resources/filtered-flowtype-" + destFormat.format(filteredTrades.get(0).getCobDate()).replace(":", "-") + ".csv");
+            if (isFiltered) {
+                FileWriter writer = new FileWriter("./src/test/resources/filtered-flowtype-" + destFormat.format(data.getCobDate()).replace(":", "-") + ".csv");
                 ColumnPositionMappingStrategy mappingStrategy = new ColumnPositionMappingStrategy<>();
                 mappingStrategy.setType(Trade.class);
 
@@ -188,7 +184,7 @@ class FilterControllerTest {
                 StatefulBeanToCsv beanWriter = builder.withMappingStrategy(mappingStrategy).build();
 
 
-                beanWriter.write(filteredTrades);
+                beanWriter.write(data);
 
 
                 writer.close();
@@ -198,6 +194,6 @@ class FilterControllerTest {
         }
 
 
-        return nonFilteredTrades;
+        return data;
     }
 }

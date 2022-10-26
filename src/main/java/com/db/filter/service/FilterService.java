@@ -2,21 +2,16 @@ package com.db.filter.service;
 
 import com.db.filter.entity.Trade;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.opencsv.bean.ColumnPositionMappingStrategy;
-import com.opencsv.bean.StatefulBeanToCsv;
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.*;
+import com.opencsv.exceptions.CsvException;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-
-import java.io.FileWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -25,49 +20,46 @@ public class FilterService {
     private final TransformService transformService;
     private final ExceptionsService exceptionsService;
 
-    public List<Trade> filterData(List<Trade> enrichedData){
+    private final String FILE_PATH = "./src/main/resources/filtered-tradeName-";
 
-        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public Trade filterData(Trade trade){
 
-        List<Trade> filteredTrades = new ArrayList<>();
-        List<Trade> nonFilteredTrades = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        if(enrichedData.isEmpty()){
+        if(trade == null || trade.equals(new Trade())){
             sendException("","Runtime Exception","","",Date.from(Instant.now()));
-            return new ArrayList<>();
+            return new Trade();
         }
 
-        for (Trade trade: enrichedData) {
-            if(trade.getAmount()>0 && !"JPN".equals(trade.getCurrency())){
-                nonFilteredTrades.add(trade);
-            }else{
-                filteredTrades.add(trade);
-            }
-        }
+        boolean isFiltered = trade.getAmount() <= 0 || "JPN".equals(trade.getCurrency());
 
-        createFileWithFilteredData(destFormat, filteredTrades);
+        createFileWithFilteredData(dateFormat, isFiltered, trade);
 
-        sendDataToTransformService(nonFilteredTrades);
+        sendDataToTransformService(trade);
 
-        return nonFilteredTrades;
+        return trade;
     }
 
-    private void createFileWithFilteredData(SimpleDateFormat destFormat, List<Trade> filteredTrades) {
+    private void createFileWithFilteredData(SimpleDateFormat destFormat, boolean isFiltered, Trade data) {
         try {
-            if(!filteredTrades.isEmpty()) {
-                FileWriter writer = new FileWriter("./src/main/resources/filtered-flowtype-"
-                        + destFormat.format(filteredTrades.get(0).getCobDate()).replace(":", "-") + ".csv");
-                ColumnPositionMappingStrategy mappingStrategy = new ColumnPositionMappingStrategy<>();
-                mappingStrategy.setType(Trade.class);
-                String[] columns = {"id", "tradeName", "bookId", "country", "counterpartyId", "currency",
-                        "cobDate", "amount", "tradeTax", "book", "counterparty"};
-                mappingStrategy.setColumnMapping(columns);
+            if(isFiltered) {
+                File file = new File(FILE_PATH
+                        + destFormat.format(data.getCobDate()).replace(":", "-") + ".csv");
 
-                StatefulBeanToCsvBuilder<Trade> builder = new StatefulBeanToCsvBuilder(writer);
-                StatefulBeanToCsv beanWriter = builder.withMappingStrategy(mappingStrategy).build();
+                createFileIfNotExist(destFormat, data, file);
 
+                List list = readExistingLinesFromFile(destFormat, data);
 
-                beanWriter.write(filteredTrades);
+                CSVWriter writer = setUpCsvwriter(destFormat, data);
+
+                Iterator it = list.iterator();
+                while(it.hasNext()) {
+                    writer.writeNext((String[]) it.next());
+                }
+
+                writer.writeNext(convertTradeToStringArray(data));
+
+                writer.flush();
                 writer.close();
             }
         } catch (Exception e) {
@@ -78,7 +70,51 @@ public class FilterService {
         }
     }
 
-    private void sendDataToTransformService(List<Trade> nonFilteredTrades) {
+    @NotNull
+    private CSVWriter setUpCsvwriter(SimpleDateFormat destFormat, Trade data) throws IOException {
+        return new CSVWriter(new FileWriter(FILE_PATH
+                + destFormat.format(data.getCobDate()).replace(":", "-") + ".csv"), ';',
+                CSVWriter.NO_QUOTE_CHARACTER,
+                CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                CSVWriter.DEFAULT_LINE_END);
+    }
+
+    @NotNull
+    private String[] convertTradeToStringArray(Trade data) {
+        return new String[]{data.getId().toString(), data.getTradeName(), data.getBookId().toString()
+                , data.getCountry(), data.getCounterpartyId().toString(), data.getCurrency(), data.getCobDate().toString()
+                , data.getAmount().toString(), data.getTradeTax().toString(), data.getBook().toString(), data.getCounterparty().toString()};
+    }
+
+    private List readExistingLinesFromFile(SimpleDateFormat destFormat, Trade data) throws IOException, CsvException {
+        CSVParser parser = new CSVParserBuilder().withSeparator(';').build();
+        CSVReader reader = new CSVReaderBuilder(
+                new FileReader(FILE_PATH
+                + destFormat.format(data.getCobDate()).replace(":", "-") + ".csv"))
+                .withCSVParser(parser).build();
+
+        List list = reader.readAll();
+
+        reader.close();
+        return list;
+    }
+
+    private void createFileIfNotExist(SimpleDateFormat destFormat, Trade data, File file) throws IOException {
+        if(!file.exists()){
+            file.createNewFile();
+
+            CSVWriter writerHeader = setUpCsvwriter(destFormat, data);
+            String[] columns = {"id", "tradeName", "bookId", "country", "counterpartyId", "currency",
+                    "cobDate", "amount", "tradeTax", "book", "counterparty"};
+
+            writerHeader.writeNext(columns);
+            writerHeader.flush();
+            writerHeader.close();
+
+        }
+    }
+
+    private void sendDataToTransformService(Trade nonFilteredTrades) {
         try {
             transformService.postFilteredData(nonFilteredTrades);
         } catch (JsonProcessingException e) {

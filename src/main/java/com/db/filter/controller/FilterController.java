@@ -20,30 +20,28 @@ import java.util.*;
 @RestController
 public class FilterController {
 
-    List<Trade> ddbbEnrichedData;
+
 
     private final FilterService filterService;
     public FilterController(FilterService filterService) {
         super();
         this.filterService = filterService;
 
-        ddbbEnrichedData = new ArrayList<>();
+
     }
 
 
 
-    @PostMapping("/Trades/filter")
-    public ResponseEntity<List<Trade>> postEnrichData(@RequestBody List<Trade> enrichedData) {
+    @PostMapping("/trades/filter")
+    public ResponseEntity<Trade> postEnrichData(@RequestBody Trade enrichedData) {
 
-        ddbbEnrichedData = filterService.filterData(enrichedData);
-
-        if(ddbbEnrichedData.isEmpty()){
-            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+        if(enrichedData.equals(new Trade()) || enrichedData == null){
+            return new ResponseEntity<>(new Trade(),HttpStatus.BAD_REQUEST);
         }
 
-        ResponseEntity<List<Trade>> response = new ResponseEntity<>(ddbbEnrichedData, HttpStatus.CREATED);
+        Trade trade = filterService.filterData(enrichedData);
 
-
+        ResponseEntity<Trade> response = new ResponseEntity<>(enrichedData, HttpStatus.CREATED);
 
         return response;
     }

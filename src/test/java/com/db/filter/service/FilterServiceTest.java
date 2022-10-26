@@ -122,12 +122,23 @@ class FilterServiceTest {
     }
 
     @Test
+    void noFilterData() throws JsonProcessingException {
+
+        given(transformService.postFilteredData(filterData(inventedTrades.get(0)))).willReturn(filterData(inventedTrades.get(0)));
+
+        Trade actual = filterService.filterData(inventedTrades.get(0));
+        Trade expected = filterData(inventedTrades.get(0));
+
+        assertEquals(expected,actual);
+    }
+
+    @Test
     void filterData() throws JsonProcessingException {
 
-        given(transformService.postFilteredData(filterData(inventedTrades))).willReturn(filterData(inventedTrades));
+        given(transformService.postFilteredData(filterData(inventedTrades.get(1)))).willReturn(filterData(inventedTrades.get(1)));
 
-        List<Trade> actual = filterService.filterData(inventedTrades);
-        List<Trade> expected = filterData(inventedTrades);
+        Trade actual = filterService.filterData(inventedTrades.get(1));
+        Trade expected = filterData(inventedTrades.get(1));
 
         assertEquals(expected,actual);
     }
@@ -136,11 +147,11 @@ class FilterServiceTest {
     void filterDataSendEmptyBody() throws JsonProcessingException {
 
         ResponseEntity<Exception> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
-        given(transformService.postFilteredData(new ArrayList<>())).willReturn(new ArrayList<>());
+        given(transformService.postFilteredData(new Trade())).willReturn(new Trade());
         given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
-        List<Trade> actual = filterService.filterData(new ArrayList<>());
-        List<Trade> expected = filterData(new ArrayList<>());
+        Trade actual = filterService.filterData(new Trade());
+        Trade expected = filterData(new Trade());
 
         assertEquals(expected,actual);
 
@@ -148,7 +159,7 @@ class FilterServiceTest {
 
     @Test
     void filterDataThrowException() throws JsonProcessingException {
-        List<Trade> expectedResultFromService = new ArrayList<>();
+        Trade expectedResultFromService = new Trade();
         given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
@@ -170,43 +181,40 @@ class FilterServiceTest {
 
         inventedTrades.add(trade);
 
-        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades));
+        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades.get(0)));
     }
 
     @Test
     void filterDataThrowJsonProcessingException() throws JsonProcessingException {
         given(transformService.postFilteredData(any())).willThrow(new JsonProcessingException("Error"){});
 
-        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades));
+        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades.get(0)));
     }
 
-    private List<Trade> filterData(List<Trade> data) {
+    private Trade filterData(Trade data) {
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
 
-        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd");
         HashMap<String, Object> filteredData = new HashMap<>();
 
-        List<Trade> filteredTrades = new ArrayList<>();
-        List<Trade> nonFilteredTrades = new ArrayList<>();
+        if (data==null || data.equals(new Trade())) {
+            return new Trade();
+        }
+        boolean isFiltered;
 
-        if (data.isEmpty()) {
-            return new ArrayList<>();
+
+
+        if (data.getAmount() > 0 && !"JPN".equals(data.getCurrency())) {
+            isFiltered=false;
+        } else {
+            isFiltered=true;
         }
 
-
-        for (Trade trade : data) {
-
-            if (trade.getAmount() > 0 && !"JPN".equals(trade.getCurrency())) {
-                nonFilteredTrades.add(trade);
-            } else {
-                filteredTrades.add(trade);
-            }
-        }
 
         try {
-            if (!filteredTrades.isEmpty()) {
-                FileWriter writer = new FileWriter("./src/test/resources/filtered-flowtype-" + destFormat.format(filteredTrades.get(0).getCobDate()).replace(":", "-") + ".csv");
+            if (isFiltered) {
+                FileWriter writer = new FileWriter("./src/test/resources/filtered-flowtype-" + destFormat.format(data.getCobDate()).replace(":", "-") + ".csv");
                 ColumnPositionMappingStrategy mappingStrategy = new ColumnPositionMappingStrategy<>();
                 mappingStrategy.setType(Trade.class);
 
@@ -218,7 +226,7 @@ class FilterServiceTest {
                 StatefulBeanToCsv beanWriter = builder.withMappingStrategy(mappingStrategy).build();
 
 
-                beanWriter.write(filteredTrades);
+                beanWriter.write(data);
 
 
                 writer.close();
@@ -228,7 +236,7 @@ class FilterServiceTest {
         }
 
 
-        return nonFilteredTrades;
+        return data;
     }
 
 

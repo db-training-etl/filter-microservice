@@ -133,13 +133,13 @@ public class FilterControllerIT {
     @Test
     void postEnrichedData() throws Exception {
         //GIVEN
-        ResponseEntity<List<Trade>> result = new ResponseEntity<>(inventedTrades,HttpStatus.CREATED);
+        ResponseEntity<Trade> result = new ResponseEntity<>(inventedTrades.get(0),HttpStatus.CREATED);
 
-        given(transformService.postFilteredData(inventedTrades)).willReturn(inventedTrades);
+        given(transformService.postFilteredData(inventedTrades.get(0))).willReturn(inventedTrades.get(0));
         //WHEN
-        ResultActions response = mockMvc.perform(post("/Trades/filter")
+        ResultActions response = mockMvc.perform(post("/trades/filter")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inventedTrades)));
+                .content(objectMapper.writeValueAsString(inventedTrades.get(0))));
         //THEN
         response.andExpect(status().isCreated()).andDo(print());
     }
@@ -153,7 +153,7 @@ public class FilterControllerIT {
         given(exceptionsService.postException(any(),any(),any(),any(),any())).willReturn(result);
 
         //WHEN
-        ResultActions response = mockMvc.perform(post("/Trades/filter")
+        ResultActions response = mockMvc.perform(post("/trades/filter")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(null)));
         //THEN
