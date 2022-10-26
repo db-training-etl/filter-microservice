@@ -1,5 +1,7 @@
 package com.db.filter.service;
 
+import com.db.filter.entity.ExceptionLog;
+import com.db.filter.repository.PostRequests;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -13,6 +15,8 @@ public class ExceptionsService {
 
     WebClient webClient;
 
+
+
     String baseUrl;
 
     public ExceptionsService(){
@@ -25,7 +29,7 @@ public class ExceptionsService {
         webClient = WebClient.create(baseUrl);
     }
 
-    public ResponseEntity<Exception> postException(String name, String type, String message, String trace, Date cobDate) {
+    public ResponseEntity<ExceptionLog> postException(String name, String type, String message, String trace, Date cobDate) {
         HashMap<String,Object> requestBody = new HashMap<>();
         requestBody.put("name",name);
         requestBody.put("type",type);
@@ -37,7 +41,7 @@ public class ExceptionsService {
                 .uri(uriBuilder -> uriBuilder.path("exceptions/save").build())
                 .body(BodyInserters.fromValue(requestBody))
                 .retrieve()
-                .toEntity(Exception.class)
+                .toEntity(ExceptionLog.class)
                 .block();
     }
 }

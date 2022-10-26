@@ -2,6 +2,7 @@ package com.db.filter.service;
 
 import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
+import com.db.filter.entity.ExceptionLog;
 import com.db.filter.entity.Trade;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
@@ -146,7 +147,7 @@ class FilterServiceTest {
     @Test
     void filterDataSendEmptyBody() throws JsonProcessingException {
 
-        ResponseEntity<Exception> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
+        ResponseEntity<ExceptionLog> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
         given(transformService.postFilteredData(new Trade())).willReturn(new Trade());
         given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 

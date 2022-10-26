@@ -1,5 +1,6 @@
 package com.db.filter.service;
 
+import com.db.filter.entity.ExceptionLog;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
@@ -22,7 +23,7 @@ class ExceptionsServiceTest {
     ExceptionsService exceptionsService;
     ObjectMapper objectMapper;
     public MockWebServer mockBackEnd;
-    ResponseEntity<Exception> expectedResponse;
+    ResponseEntity<ExceptionLog> expectedResponse;
 
     @BeforeEach
     void setUp(){
@@ -32,9 +33,9 @@ class ExceptionsServiceTest {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-Type","application/json");
-        responseHeaders.set("content-length","22204");
+        responseHeaders.set("content-length","200");
 
-        expectedResponse = new ResponseEntity<Exception>(new Exception(),responseHeaders,200);
+        expectedResponse = new ResponseEntity<ExceptionLog>(new ExceptionLog(),responseHeaders,200);
 
 
     }
@@ -48,7 +49,7 @@ class ExceptionsServiceTest {
         );
 
         //WHEN
-        ResponseEntity<Exception> actual = exceptionsService.postException("name","type","message","trace", Date.from(Instant.now()));
+        ResponseEntity<ExceptionLog> actual = exceptionsService.postException("name","type","message","trace", Date.from(Instant.now()));
 
         //THEN
         assertEquals(expectedResponse.toString(),actual.toString());
