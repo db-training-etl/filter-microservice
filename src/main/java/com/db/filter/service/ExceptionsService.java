@@ -20,7 +20,7 @@ public class ExceptionsService {
     String baseUrl;
 
     public ExceptionsService(){
-        this.baseUrl = "http://localhost:8089/";//need to change
+        this.baseUrl = "http://localhost:8069/";//need to change
         webClient = WebClient.create(baseUrl);
     }
 
@@ -38,7 +38,7 @@ public class ExceptionsService {
         requestBody.put("cobDate",cobDate);
 
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder.path("exceptions/save").build())
+                .uri(uriBuilder -> uriBuilder.path("exceptions").build())
                 .body(BodyInserters.fromValue(requestBody))
                 .retrieve()
                 .toEntity(ExceptionLog.class)
