@@ -1,2 +1,3 @@
-exceptionservice:
-  url: http://localhost:8069/
+urls:
+  exceptionservice: http://localhost:8069/
+  transformservice: http://localhost:8085/

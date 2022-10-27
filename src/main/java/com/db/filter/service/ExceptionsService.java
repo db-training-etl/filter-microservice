@@ -17,7 +17,7 @@ public class ExceptionsService {
     WebClient webClient;
 
 
-    @Value("${exceptionservice.url}")
+    @Value("${urls.exceptionservice}")
     String baseUrl;
 
     public ExceptionsService(){
