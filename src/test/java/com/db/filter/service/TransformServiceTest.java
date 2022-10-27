@@ -22,7 +22,7 @@ class TransformServiceTest {
     TransformService transformService;
     ObjectMapper objectMapper;
     public MockWebServer mockBackEnd;
-    List expectedResponse;
+    Trade expectedResponse;
 
     @BeforeEach
     void setUp(){
@@ -34,16 +34,15 @@ class TransformServiceTest {
         responseHeaders.set("Content-Type","application/json");
         responseHeaders.set("content-length","22204");
 
-        expectedResponse = new ArrayList<>();
-        Trade trade = new Trade();
-        expectedResponse.add(trade);
+        expectedResponse = new Trade();
+
     }
 
     @Test
     void postFilteredData() throws JsonProcessingException {
-        List<Trade> filteredData = new ArrayList<>();
+
         Trade trade = new Trade();
-        filteredData.add(trade);
+
 
         //GIVEN
         mockBackEnd.enqueue(new MockResponse()
@@ -52,7 +51,7 @@ class TransformServiceTest {
         );
 
         //WHEN
-        List actual = transformService.postFilteredData(filteredData);
+        Trade actual = transformService.postFilteredData(trade);
 
         //THEN
         assertEquals(objectMapper.writeValueAsString(expectedResponse),objectMapper.writeValueAsString(actual));
