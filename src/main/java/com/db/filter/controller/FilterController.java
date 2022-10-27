@@ -35,13 +35,14 @@ public class FilterController {
     @PostMapping("/trades/filter")
     public ResponseEntity<Trade> postEnrichData(@RequestBody Trade enrichedData) {
 
-        if(enrichedData.equals(new Trade()) || enrichedData == null){
-            return new ResponseEntity<>(new Trade(),HttpStatus.BAD_REQUEST);
-        }
-
         Trade trade = filterService.filterData(enrichedData);
 
-        ResponseEntity<Trade> response = new ResponseEntity<>(enrichedData, HttpStatus.CREATED);
+        ResponseEntity<Trade> response;
+        if(trade.equals(new Trade())){
+            response = new ResponseEntity<>(trade,HttpStatus.BAD_REQUEST);
+        }else{
+            response = new ResponseEntity<>(trade,HttpStatus.CREATED);
+        }
 
         return response;
     }
