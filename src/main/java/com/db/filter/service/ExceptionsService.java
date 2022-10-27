@@ -14,35 +14,19 @@ import java.util.HashMap;
 @Service
 public class ExceptionsService {
 
-    WebClient webClient;
+    PostRequests postRequests;
 
+    public ExceptionsService(PostRequests postRequests){
 
-    @Value("${urls.exceptionservice}")
-    String baseUrl;
+        this.postRequests = postRequests;
 
-    public ExceptionsService(){
-        //this.baseUrl = "http://localhost:8069/";//need to change
-        webClient = WebClient.create(baseUrl);
     }
 
-    public ExceptionsService(String baseUrl) {
-        this.baseUrl = baseUrl;
-        webClient = WebClient.create(baseUrl);
-    }
+
 
     public ResponseEntity<ExceptionLog> postException(String name, String type, String message, String trace, Date cobDate) {
-        HashMap<String,Object> requestBody = new HashMap<>();
-        requestBody.put("name",name);
-        requestBody.put("type",type);
-        requestBody.put("message",message);
-        requestBody.put("trace",trace);
-        requestBody.put("cobDate",cobDate);
 
-        return webClient.post()
-                .uri(uriBuilder -> uriBuilder.path("exceptions").build())
-                .body(BodyInserters.fromValue(requestBody))
-                .retrieve()
-                .toEntity(ExceptionLog.class)
-                .block();
+        return postRequests.postException(name,type,message,trace,cobDate);
+
     }
 }

@@ -63,8 +63,6 @@ public class FilterService {
                 writer.close();
             }
         } catch (Exception e) {
-            //throw exception and call exception service and send him the log
-
             sendException("","Runtime Exception","","",Date.from(Instant.now()));
             throw new RuntimeException(e);
         }
