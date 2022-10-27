@@ -2,6 +2,7 @@ package com.db.filter.service;
 
 import com.db.filter.entity.ExceptionLog;
 import com.db.filter.repository.PostRequests;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -16,11 +17,11 @@ public class ExceptionsService {
     WebClient webClient;
 
 
-
+    @Value("${exceptionservice.url}")
     String baseUrl;
 
     public ExceptionsService(){
-        this.baseUrl = "http://localhost:8069/";//need to change
+        //this.baseUrl = "http://localhost:8069/";//need to change
         webClient = WebClient.create(baseUrl);
     }
 
