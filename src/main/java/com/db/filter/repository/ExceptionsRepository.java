@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Date;
 import java.util.HashMap;
 @Repository
-public class ExceptionsRepository implements PostRequests{
+public class ExceptionsRepository implements ExceptionsPostRequests {
 
     WebClient webClient;
 

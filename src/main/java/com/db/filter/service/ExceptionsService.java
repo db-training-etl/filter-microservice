@@ -1,24 +1,20 @@
 package com.db.filter.service;
 
 import com.db.filter.entity.ExceptionLog;
-import com.db.filter.repository.PostRequests;
-import org.springframework.beans.factory.annotation.Value;
+import com.db.filter.repository.ExceptionsPostRequests;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
-import java.util.HashMap;
 
 @Service
 public class ExceptionsService {
 
-    PostRequests postRequests;
+    ExceptionsPostRequests exceptionsPostRequests;
 
-    public ExceptionsService(PostRequests postRequests){
+    public ExceptionsService(ExceptionsPostRequests exceptionsPostRequests){
 
-        this.postRequests = postRequests;
+        this.exceptionsPostRequests = exceptionsPostRequests;
 
     }
 
@@ -26,7 +22,7 @@ public class ExceptionsService {
 
     public ResponseEntity<ExceptionLog> postException(String name, String type, String message, String trace, Date cobDate) {
 
-        return postRequests.postException(name,type,message,trace,cobDate);
+        return exceptionsPostRequests.postException(name,type,message,trace,cobDate);
 
     }
 }

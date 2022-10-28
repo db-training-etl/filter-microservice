@@ -124,8 +124,8 @@ class FilterServiceTest {
 
     @Test
     void noFilterData() throws JsonProcessingException {
-
-        given(transformService.postFilteredData(filterData(inventedTrades.get(0)))).willReturn(filterData(inventedTrades.get(0)));
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
+        given(transformService.postFilteredData(filterData(inventedTrades.get(0)))).willReturn(result);
 
         Trade actual = filterService.filterData(inventedTrades.get(0));
         Trade expected = filterData(inventedTrades.get(0));
@@ -135,8 +135,8 @@ class FilterServiceTest {
 
     @Test
     void filterData() throws JsonProcessingException {
-
-        given(transformService.postFilteredData(filterData(inventedTrades.get(1)))).willReturn(filterData(inventedTrades.get(1)));
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
+        given(transformService.postFilteredData(filterData(inventedTrades.get(1)))).willReturn(result);
 
         Trade actual = filterService.filterData(inventedTrades.get(1));
         Trade expected = filterData(inventedTrades.get(1));
@@ -146,9 +146,10 @@ class FilterServiceTest {
 
     @Test
     void filterDataSendEmptyBody() throws JsonProcessingException {
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
 
         ResponseEntity<ExceptionLog> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
-        given(transformService.postFilteredData(new Trade())).willReturn(new Trade());
+        given(transformService.postFilteredData(new Trade())).willReturn(result);
         given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
         Trade actual = filterService.filterData(new Trade());
@@ -161,7 +162,8 @@ class FilterServiceTest {
     @Test
     void filterDataThrowException() throws JsonProcessingException {
         Trade expectedResultFromService = new Trade();
-        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
+        given(transformService.postFilteredData(expectedResultFromService)).willReturn(result);
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
         SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
