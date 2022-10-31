@@ -1,6 +1,7 @@
 package com.db.filter.controller;
 import com.db.filter.entity.Trade;
-import com.db.filter.service.FilterService;
+import com.db.filter.service.FilterOrquestrator;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,17 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
+@AllArgsConstructor
 public class FilterController {
 
 
 
-    private final FilterService filterService;
-    public FilterController(FilterService filterService) {
-        super();
-        this.filterService = filterService;
+    private final FilterOrquestrator filterService;
 
-
-    }
 
 
 

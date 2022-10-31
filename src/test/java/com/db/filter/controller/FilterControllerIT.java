@@ -159,5 +159,4 @@ public class FilterControllerIT {
         //THEN
         response.andExpect(status().isBadRequest()).andDo(print());
     }
-    
 }

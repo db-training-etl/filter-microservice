@@ -33,9 +33,11 @@ public class TransformRepository implements TransformPostRequests{
     public ResponseEntity postFilteredData(Trade trade) throws JsonProcessingException {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path("trades/save").build())
-                .body(BodyInserters.fromValue(objectMapper.writeValueAsString(trade)))
+                //.body(BodyInserters.fromValue(objectMapper.writeValueAsString(trade)))
+                .bodyValue(trade)
                 .retrieve()
-                .toEntity(Trade.class)
+                .toBodilessEntity()
+                //.toEntity(Trade.class)
                 .block();
     }
 }

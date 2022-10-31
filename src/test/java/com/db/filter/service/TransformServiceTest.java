@@ -38,10 +38,10 @@ class TransformServiceTest {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-Type","application/json");
-        responseHeaders.set("content-length","294");
+        responseHeaders.set("content-length","126");
         body = new Trade();
 
-        expectedResponse = new ResponseEntity(body,responseHeaders,HttpStatus.OK);
+        expectedResponse = new ResponseEntity(responseHeaders,HttpStatus.OK);
 
     }
 
