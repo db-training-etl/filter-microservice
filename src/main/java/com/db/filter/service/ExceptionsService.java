@@ -15,12 +15,13 @@ public class ExceptionsService {
     public ExceptionsService(ExceptionsPostRequests exceptionsPostRequests){
 
         this.exceptionsPostRequests = exceptionsPostRequests;
-
     }
 
 
 
+
     public ResponseEntity<ExceptionLog> postException(String name, String type, String message, String trace, Date cobDate) {
+
 
         return exceptionsPostRequests.postException(name,type,message,trace,cobDate);
 
