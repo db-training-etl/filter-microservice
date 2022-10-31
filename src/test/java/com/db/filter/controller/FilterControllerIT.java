@@ -133,9 +133,9 @@ public class FilterControllerIT {
     @Test
     void postEnrichedData() throws Exception {
         //GIVEN
-        ResponseEntity<Trade> result = new ResponseEntity<>(inventedTrades.get(0),HttpStatus.CREATED);
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
 
-        given(transformService.postFilteredData(inventedTrades.get(0))).willReturn(inventedTrades.get(0));
+        given(transformService.postFilteredData(inventedTrades.get(0))).willReturn(result);
         //WHEN
         ResultActions response = mockMvc.perform(post("/trades/filter")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -159,5 +159,4 @@ public class FilterControllerIT {
         //THEN
         response.andExpect(status().isBadRequest()).andDo(print());
     }
-    
 }

@@ -1,6 +1,7 @@
 package com.db.filter.service;
 
 import com.db.filter.entity.Trade;
+import com.db.filter.repository.TransformRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
@@ -8,6 +9,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
@@ -22,28 +24,29 @@ class TransformServiceTest {
     TransformService transformService;
     ObjectMapper objectMapper;
     public MockWebServer mockBackEnd;
-    Trade expectedResponse;
+    ResponseEntity<Trade> expectedResponse;
 
+    TransformRepository transformRepository;
+
+    Trade body;
     @BeforeEach
     void setUp(){
         mockBackEnd = new MockWebServer();
         objectMapper = new ObjectMapper();
-        transformService = new TransformService(mockBackEnd.url("/").url().toString());
+        transformRepository = new TransformRepository(mockBackEnd.url("/").url().toString());
+        transformService = new TransformService(transformRepository);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-Type","application/json");
-        responseHeaders.set("content-length","22204");
+        responseHeaders.set("content-length","126");
+        body = new Trade();
 
-        expectedResponse = new Trade();
+        expectedResponse = new ResponseEntity(responseHeaders,HttpStatus.OK);
 
     }
 
     @Test
     void postFilteredData() throws JsonProcessingException {
-
-        Trade trade = new Trade();
-
-
         //GIVEN
         mockBackEnd.enqueue(new MockResponse()
                 .addHeader("Content-Type", "application/json")
@@ -51,7 +54,7 @@ class TransformServiceTest {
         );
 
         //WHEN
-        Trade actual = transformService.postFilteredData(trade);
+        ResponseEntity<Trade> actual = transformService.postFilteredData(body);
 
         //THEN
         assertEquals(objectMapper.writeValueAsString(expectedResponse),objectMapper.writeValueAsString(actual));

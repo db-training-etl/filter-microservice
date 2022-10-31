@@ -4,17 +4,18 @@ import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.ExceptionLog;
 import com.db.filter.entity.Trade;
+import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -24,15 +25,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
+
 
 class FilterServiceTest {
 
-    FilterService filterService;
+    FilterOrquestrator filterService;
 
 
     TransformService transformService;
+
+
+    FileWriterRepository fileWriterRepository;
 
 
     ExceptionsService exceptionsService;
@@ -44,7 +48,8 @@ class FilterServiceTest {
     void setUp(){
         transformService = mock(TransformService.class);
         exceptionsService = mock(ExceptionsService.class);
-        filterService = new FilterService(transformService,exceptionsService);
+        fileWriterRepository = mock(FileWriterRepository.class);
+        filterService = new FilterOrquestrator(transformService,exceptionsService,fileWriterRepository);
 
         inventedTrades = new ArrayList<>();
         counterparty = new Counterparty();
@@ -124,8 +129,8 @@ class FilterServiceTest {
 
     @Test
     void noFilterData() throws JsonProcessingException {
-
-        given(transformService.postFilteredData(filterData(inventedTrades.get(0)))).willReturn(filterData(inventedTrades.get(0)));
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
+        given(transformService.postFilteredData(filterData(inventedTrades.get(0)))).willReturn(result);
 
         Trade actual = filterService.filterData(inventedTrades.get(0));
         Trade expected = filterData(inventedTrades.get(0));
@@ -135,20 +140,35 @@ class FilterServiceTest {
 
     @Test
     void filterData() throws JsonProcessingException {
-
-        given(transformService.postFilteredData(filterData(inventedTrades.get(1)))).willReturn(filterData(inventedTrades.get(1)));
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
+        given(transformService.postFilteredData(filterData(inventedTrades.get(1)))).willReturn(result);
 
         Trade actual = filterService.filterData(inventedTrades.get(1));
         Trade expected = filterData(inventedTrades.get(1));
 
         assertEquals(expected,actual);
     }
+    @Test
+    void GIVEN_Trade_WHEN_FileHasWrongName_THEN_ThrowException() throws IOException {
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
+        Trade data = new Trade();
+        data.setId(1);
+        data.setAmount(0.0);
+
+        given(transformService.postFilteredData(filterData(any()))).willReturn(result);
+        doThrow(new IOException()).doNothing().when(fileWriterRepository).createFileWithFilteredData(data);
+
+
+
+        assertThrows(RuntimeException.class,()->filterService.filterData(data));
+    }
 
     @Test
     void filterDataSendEmptyBody() throws JsonProcessingException {
+        ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
 
         ResponseEntity<ExceptionLog> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
-        given(transformService.postFilteredData(new Trade())).willReturn(new Trade());
+        given(transformService.postFilteredData(new Trade())).willReturn(result);
         given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
         Trade actual = filterService.filterData(new Trade());
@@ -156,33 +176,6 @@ class FilterServiceTest {
 
         assertEquals(expected,actual);
 
-    }
-
-    @Test
-    void filterDataThrowException() throws JsonProcessingException {
-        Trade expectedResultFromService = new Trade();
-        given(transformService.postFilteredData(expectedResultFromService)).willReturn(expectedResultFromService);
-
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-        SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        inventedTrades= new ArrayList<>();
-
-        Trade trade = new Trade();
-        trade.setId(3);
-        trade.setTradeName("test3");
-        trade.setBookId(book.getBookId());
-        trade.setCountry("aaaaa");
-        trade.setCounterpartyId(counterparty.getCounterpartyId());
-        trade.setCurrency("USD");
-        trade.setCobDate(null);
-        trade.setAmount(0.0);
-        trade.setTradeTax(true);
-        trade.setBook(book);
-        trade.setCounterparty(counterparty);
-
-        inventedTrades.add(trade);
-
-        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades.get(0)));
     }
 
     @Test

@@ -3,10 +3,7 @@ package com.db.filter.controller;
 import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
-import com.db.filter.service.ExceptionsService;
-import com.db.filter.service.FilterService;
-import com.db.filter.service.TransformService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.db.filter.service.FilterOrquestrator;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -21,8 +18,6 @@ import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -31,10 +26,7 @@ class FilterControllerTest {
 
     FilterController filterController;
 
-
-    TransformService transformService;
-    ExceptionsService exceptionsService;
-    FilterService filterService;
+    FilterOrquestrator filterService;
 
     List<Trade> inventedTrades;
     Counterparty counterparty;
@@ -43,9 +35,7 @@ class FilterControllerTest {
 
     @BeforeEach
     void setUp() {
-        transformService = mock(TransformService.class);
-        exceptionsService = mock(ExceptionsService.class);
-        filterService = mock(FilterService.class);
+        filterService = mock(FilterOrquestrator.class);
         filterController = new FilterController(filterService);
 
 
@@ -128,7 +118,7 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichData() throws JsonProcessingException {
+    void postEnrichData() {
         given(filterService.filterData(inventedTrades.get(0))).willReturn(filterData(inventedTrades.get(0)));
 
         ResponseEntity<Trade> enrichDataResponse = filterController.postEnrichData(inventedTrades.get(0));
@@ -138,7 +128,7 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichDataThrowExceptionNoRequestedBody() throws JsonProcessingException {
+    void postEnrichDataThrowExceptionNoRequestedBody() {
         Trade emptyResponse = new Trade();
 
         given(filterService.filterData(emptyResponse)).willReturn(emptyResponse);
@@ -147,8 +137,6 @@ class FilterControllerTest {
         ResponseEntity<Trade> expected = new ResponseEntity<Trade>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
         assertEquals(expected, enrichDataResponse);
     }
-
-
 
     private Trade filterData(Trade data) {
 
@@ -192,7 +180,6 @@ class FilterControllerTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
 
         return data;
     }
