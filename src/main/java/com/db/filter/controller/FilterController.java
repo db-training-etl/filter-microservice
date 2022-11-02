@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 @RestController
 @AllArgsConstructor
@@ -32,6 +34,18 @@ public class FilterController {
             response = new ResponseEntity<>(trade,HttpStatus.CREATED);
         }
 
+        return response;
+    }
+
+    @PostMapping("/trades/filter/list")
+    public ResponseEntity<List<Trade>> postFilterList(@RequestBody List<Trade> enrichedData){
+
+        List<Trade> trades = filterService.filterList(enrichedData);
+
+
+
+        ResponseEntity response;
+        response = new ResponseEntity<>(trades,HttpStatus.OK);
         return response;
     }
 

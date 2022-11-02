@@ -4,6 +4,7 @@ import com.db.filter.entity.Trade;
 import com.db.filter.repository.TransformRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,25 @@ class TransformServiceTest {
 
         //WHEN
         ResponseEntity<Trade> actual = transformService.postFilteredData(body);
+
+        //THEN
+        assertEquals(objectMapper.writeValueAsString(expectedResponse),objectMapper.writeValueAsString(actual));
+    }
+
+    @Test
+    void GIVEN_ListOfTrades_WHEN_PostFilteredList_THEN_ResponseEntityOK() throws JsonProcessingException {
+        List<Trade> trades = new ArrayList<>();
+        body.setId(0);
+        body.setCobDate(Date.from(Instant.now()));
+        trades.add(body);
+        //GIVEN
+        mockBackEnd.enqueue(new MockResponse()
+                .addHeader("Content-Type", "application/json")
+                .setBody(objectMapper.writeValueAsString(expectedResponse))
+        );
+
+        //WHEN
+        ResponseEntity actual = transformService.postFilteredList(trades);
 
         //THEN
         assertEquals(objectMapper.writeValueAsString(expectedResponse),objectMapper.writeValueAsString(actual));

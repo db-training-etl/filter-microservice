@@ -47,8 +47,6 @@ public class FilterOrquestrator {
         return trade;
     }
 
-
-
     private void sendDataToTransformService(Trade nonFilteredTrades) {
         try {
             transformService.postFilteredData(nonFilteredTrades);
@@ -60,5 +58,34 @@ public class FilterOrquestrator {
 
     private void sendException(String name,String type, String message,String trace, Date cobDate) {
         exceptionsService.postException(name,type,message,trace,cobDate);
+    }
+
+    public List<Trade> filterList(List<Trade> inventedTrades) {
+
+        List<Trade> nonFiltered = new ArrayList<>();
+        List<Trade> filtered = new ArrayList<>();
+
+        for (Trade trade: inventedTrades) {
+            if(trade.getAmount() <= 0 || "JPN".equals(trade.getCurrency())){
+                filtered.add(trade);
+            }else{
+                nonFiltered.add(trade);
+            }
+        }
+
+        for (Trade trade: filtered) {
+            try {
+                fileWriterRepository.createFileWithFilteredData(trade);
+            } catch (IOException e) {
+                sendException("","Rune Time Exception","","",Date.from(Instant.now()));
+                throw new RuntimeException(e);
+            }
+        }
+
+        //falta afegir la funcio d'enviar llista no filtrada al service de transform
+
+        transformService.postFilteredList(nonFiltered);
+
+        return nonFiltered;
     }
 }

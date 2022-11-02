@@ -138,6 +138,18 @@ class FilterControllerTest {
         assertEquals(expected, enrichDataResponse);
     }
 
+    @Test
+    void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnOk(){
+
+        given(filterService.filterList(inventedTrades)).willReturn(inventedTrades);
+
+        ResponseEntity actual = filterController.postFilterList(inventedTrades);
+        ResponseEntity expected = new ResponseEntity(inventedTrades,HttpStatus.OK);
+
+        assertEquals(expected.toString(),actual.toString());
+
+    }
+
     private Trade filterData(Trade data) {
 
         TimeZone utc = TimeZone.getTimeZone("UTC");
@@ -183,4 +195,6 @@ class FilterControllerTest {
 
         return data;
     }
+
+
 }

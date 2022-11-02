@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
+
 @Repository
 public class TransformRepository implements TransformPostRequests{
 
@@ -33,11 +36,19 @@ public class TransformRepository implements TransformPostRequests{
     public ResponseEntity postFilteredData(Trade trade) throws JsonProcessingException {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path("trades/save").build())
-                //.body(BodyInserters.fromValue(objectMapper.writeValueAsString(trade)))
                 .bodyValue(trade)
                 .retrieve()
                 .toBodilessEntity()
-                //.toEntity(Trade.class)
+                .block();
+    }
+
+    @Override
+    public ResponseEntity postFilteredList(List<Trade> trades) {
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder.path("trades/list/save").build())
+                .bodyValue(trades)
+                .retrieve()
+                .toBodilessEntity()
                 .block();
     }
 }
