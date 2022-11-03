@@ -118,17 +118,18 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichData() {
+    void GIVEN_Trade_WHEN_AllOk_THEN_ReturnCreated() {
         given(filterService.filterData(inventedTrades.get(0))).willReturn(filterData(inventedTrades.get(0)));
 
         ResponseEntity<Trade> enrichDataResponse = filterController.postEnrichData(inventedTrades.get(0));
         ResponseEntity<Trade> expected = new ResponseEntity<Trade>(filterData(inventedTrades.get(0)), HttpStatus.CREATED);
 
         assertEquals(expected, enrichDataResponse);
+
     }
 
     @Test
-    void postEnrichDataThrowExceptionNoRequestedBody() {
+    void GIVEN_Trade_WHEN_TradeMissingID_THEN_ReturnBadRequest() {
         Trade emptyResponse = new Trade();
 
         given(filterService.filterData(emptyResponse)).willReturn(emptyResponse);
@@ -147,7 +148,6 @@ class FilterControllerTest {
         ResponseEntity expected = new ResponseEntity(inventedTrades,HttpStatus.OK);
 
         assertEquals(expected.toString(),actual.toString());
-
     }
 
     private Trade filterData(Trade data) {

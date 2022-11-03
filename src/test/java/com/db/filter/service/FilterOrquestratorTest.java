@@ -176,10 +176,12 @@ class FilterOrquestratorTest {
 
         assertEquals(expected,actual);
 
+        //GIVEN__WHEN__THEN_
+
     }
 
     @Test
-    void filterDataThrowJsonProcessingException() throws JsonProcessingException {
+    void GIVEN_Trade_WHEN_SendToTransformServiceAndJSONProcessingFail_THEN_ThrowRuntimeException() throws JsonProcessingException {
         given(transformService.postFilteredData(any())).willThrow(new JsonProcessingException("Error"){});
 
         assertThrows(RuntimeException.class,()->filterOrquestrator.filterData(inventedTrades.get(0)));

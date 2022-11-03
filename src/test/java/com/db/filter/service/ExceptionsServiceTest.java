@@ -41,7 +41,7 @@ class ExceptionsServiceTest {
     }
 
     @Test
-    void postException() throws JsonProcessingException {
+    void GIVEN_ExceptionLog_WHEN_SendToExceptionService_THEN_Return200() throws JsonProcessingException {
         //GIVEN
         mockBackEnd.enqueue(new MockResponse()
                 .addHeader("Content-Type", "application/json")

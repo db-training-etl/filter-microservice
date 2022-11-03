@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -21,7 +20,6 @@ public class TransformRepository implements TransformPostRequests{
     ObjectMapper objectMapper;
 
     public TransformRepository() {
-        //this.baseUrl = "localhost:8085/";
         webClient = WebClient.create(baseUrl);
         objectMapper = new ObjectMapper();
     }
