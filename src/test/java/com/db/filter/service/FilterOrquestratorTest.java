@@ -1,9 +1,6 @@
 package com.db.filter.service;
 
-import com.db.filter.entity.Book;
-import com.db.filter.entity.Counterparty;
-import com.db.filter.entity.ExceptionLog;
-import com.db.filter.entity.Trade;
+import com.db.filter.entity.*;
 import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
@@ -176,8 +173,6 @@ class FilterOrquestratorTest {
 
         assertEquals(expected,actual);
 
-        //GIVEN__WHEN__THEN_
-
     }
 
     @Test
@@ -189,7 +184,11 @@ class FilterOrquestratorTest {
 
     @Test
     void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnNoFilteredTrades() throws IOException {
-        List<Trade> actual = filterOrquestrator.filterList(inventedTrades);
+
+        ChunckTrades chunckTrades = new ChunckTrades();
+        chunckTrades.setTrades(inventedTrades);
+
+        List<Trade> actual = filterOrquestrator.filterList(chunckTrades);
         List<Trade> expected = filterList(inventedTrades);
 
         verify(fileWriterRepository,times(inventedTrades.size()- actual.size())).createFileWithFilteredData(any());
@@ -206,9 +205,12 @@ class FilterOrquestratorTest {
         trade.setAmount(0.0);
         tradeCobDateMissing.add(trade);
 
+        ChunckTrades chunckTrades = new ChunckTrades();
+        chunckTrades.setTrades(tradeCobDateMissing);
+
         doThrow(new IOException()).doNothing().when(fileWriterRepository).createFileWithFilteredData(any());
 
-        assertThrows(RuntimeException.class, () -> filterOrquestrator.filterList(tradeCobDateMissing));
+        assertThrows(RuntimeException.class, () -> filterOrquestrator.filterList(chunckTrades));
 
         verify(fileWriterRepository,times(tradeCobDateMissing.size())).createFileWithFilteredData(any());
 

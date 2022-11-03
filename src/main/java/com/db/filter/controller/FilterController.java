@@ -1,4 +1,5 @@
 package com.db.filter.controller;
+import com.db.filter.entity.ChunckTrades;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.FilterOrquestrator;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ public class FilterController {
 
 
 
-    private final FilterOrquestrator filterService;
+    private final FilterOrquestrator filterOrquestrator;
 
 
 
@@ -25,7 +26,7 @@ public class FilterController {
     @PostMapping("/trades/filter")
     public ResponseEntity<Trade> postEnrichData(@RequestBody Trade enrichedData) {
 
-        Trade trade = filterService.filterData(enrichedData);
+        Trade trade = filterOrquestrator.filterData(enrichedData);
 
         ResponseEntity<Trade> response;
         if(trade.equals(new Trade())){
@@ -38,9 +39,9 @@ public class FilterController {
     }
 
     @PostMapping("/trades/filter/list")
-    public ResponseEntity<List<Trade>> postFilterList(@RequestBody List<Trade> enrichedData){
+    public ResponseEntity<List<Trade>> postFilterList(@RequestBody ChunckTrades enrichedData){
 
-        List<Trade> trades = filterService.filterList(enrichedData);
+        List<Trade> trades = filterOrquestrator.filterList(enrichedData);
 
 
 

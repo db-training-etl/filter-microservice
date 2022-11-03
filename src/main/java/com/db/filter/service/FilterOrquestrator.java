@@ -1,5 +1,6 @@
 package com.db.filter.service;
 
+import com.db.filter.entity.ChunckTrades;
 import com.db.filter.entity.Trade;
 import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,12 +61,12 @@ public class FilterOrquestrator {
         exceptionsService.postException(name,type,message,trace,cobDate);
     }
 
-    public List<Trade> filterList(List<Trade> inventedTrades) {
+    public List<Trade> filterList(ChunckTrades enrichedTrades) {
 
         List<Trade> nonFiltered = new ArrayList<>();
         List<Trade> filtered = new ArrayList<>();
 
-        for (Trade trade: inventedTrades) {
+        for (Trade trade: enrichedTrades.getTrades()) {
             if(trade.getAmount() <= 0 || "JPN".equals(trade.getCurrency())){
                 filtered.add(trade);
             }else{
