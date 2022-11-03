@@ -1,6 +1,7 @@
 package com.db.filter.repository;
 
 import com.db.filter.entity.Trade;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -13,10 +14,11 @@ import java.text.SimpleDateFormat;
 
 @NoArgsConstructor
 @Repository
+@AllArgsConstructor
 public class FileWriterRepository {
 
-    //@Value("${filepath.src}")
-    String FILE_PATH = "./src/main/resources/filtered-tradeName-";
+    @Value("${filepath.src}")
+    String FILE_PATH;
 
 
     public void createFileWithFilteredData(Trade data) throws IOException {

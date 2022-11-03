@@ -39,15 +39,11 @@ public class FilterController {
     }
 
     @PostMapping("/trades/filter/list")
-    public ResponseEntity<List<Trade>> postFilterList(@RequestBody ChunckTrades enrichedData){
+    public ResponseEntity<ChunckTrades> postFilterList(@RequestBody ChunckTrades enrichedData){
 
-        List<Trade> trades = filterOrquestrator.filterList(enrichedData);
+        ChunckTrades chunckTrades = filterOrquestrator.filterList(enrichedData);
 
-
-
-        ResponseEntity response;
-        response = new ResponseEntity<>(trades,HttpStatus.OK);
-        return response;
+        return new ResponseEntity<>(chunckTrades,HttpStatus.OK);
     }
 
 

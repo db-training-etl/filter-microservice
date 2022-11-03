@@ -188,10 +188,10 @@ class FilterOrquestratorTest {
         ChunckTrades chunckTrades = new ChunckTrades();
         chunckTrades.setTrades(inventedTrades);
 
-        List<Trade> actual = filterOrquestrator.filterList(chunckTrades);
-        List<Trade> expected = filterList(inventedTrades);
+        ChunckTrades actual = filterOrquestrator.filterList(chunckTrades);
+        ChunckTrades expected = filterList(inventedTrades);
 
-        verify(fileWriterRepository,times(inventedTrades.size()- actual.size())).createFileWithFilteredData(any());
+        verify(fileWriterRepository,times(inventedTrades.size()- actual.getTrades().size())).createFileWithFilteredData(any());
 
 
         assertEquals(expected.toString(),actual.toString());
@@ -217,7 +217,7 @@ class FilterOrquestratorTest {
     }
 
 
-    private List<Trade> filterList(List<Trade> data){
+    private ChunckTrades filterList(List<Trade> data){
         List<Trade> nonFiltered = new ArrayList<>();
 
         for (Trade trade: data) {
@@ -226,7 +226,10 @@ class FilterOrquestratorTest {
             }
         }
 
-        return nonFiltered;
+        ChunckTrades chunck = new ChunckTrades();
+        chunck.setTrades(nonFiltered);
+
+        return chunck;
     }
 
     private Trade filterData(Trade data) {

@@ -1,5 +1,5 @@
 filepath:
-  src: ./src/main/resources/filtered-tradeName-
+  src: "src/main/resources/filtered-tradeName-"
 urls:
-  exceptionservice: http://localhost:8069/
-  transformservice: http://localhost:8085/
+  exceptionservice: "http://localhost:8069/"
+  transformservice: "http://localhost:8085/"

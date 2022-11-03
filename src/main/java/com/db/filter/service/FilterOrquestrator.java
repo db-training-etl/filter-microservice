@@ -32,7 +32,7 @@ public class FilterOrquestrator {
             return new Trade();
         }
 
-        boolean isFiltered = trade.getAmount() <= 0 || "JPN".equals(trade.getCurrency());
+        boolean isFiltered = checkIfTradeIsFiltered(trade);
 
         if(isFiltered){
             try {
@@ -48,26 +48,13 @@ public class FilterOrquestrator {
         return trade;
     }
 
-    private void sendDataToTransformService(Trade nonFilteredTrades) {
-        try {
-            transformService.postFilteredData(nonFilteredTrades);
-        } catch (JsonProcessingException e) {
-            sendException("","Runtime Exception","","",Date.from(Instant.now()));
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void sendException(String name,String type, String message,String trace, Date cobDate) {
-        exceptionsService.postException(name,type,message,trace,cobDate);
-    }
-
-    public List<Trade> filterList(ChunckTrades enrichedTrades) {
+    public ChunckTrades filterList(ChunckTrades enrichedTrades) {
 
         List<Trade> nonFiltered = new ArrayList<>();
         List<Trade> filtered = new ArrayList<>();
 
         for (Trade trade: enrichedTrades.getTrades()) {
-            if(trade.getAmount() <= 0 || "JPN".equals(trade.getCurrency())){
+            if(checkIfTradeIsFiltered(trade)){
                 filtered.add(trade);
             }else{
                 nonFiltered.add(trade);
@@ -83,10 +70,27 @@ public class FilterOrquestrator {
             }
         }
 
-        //falta afegir la funcio d'enviar llista no filtrada al service de transform
-
         transformService.postFilteredList(nonFiltered);
 
-        return nonFiltered;
+        enrichedTrades.setTrades(nonFiltered);
+
+        return enrichedTrades;
+    }
+
+    private boolean checkIfTradeIsFiltered(Trade trade) {
+        return trade.getAmount() <= 0 || "JPN".equals(trade.getCurrency());
+    }
+
+    private void sendDataToTransformService(Trade nonFilteredTrades) {
+        try {
+            transformService.postFilteredData(nonFilteredTrades);
+        } catch (JsonProcessingException e) {
+            sendException("","Runtime Exception","","",Date.from(Instant.now()));
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void sendException(String name,String type, String message,String trace, Date cobDate) {
+        exceptionsService.postException(name,type,message,trace,cobDate);
     }
 }

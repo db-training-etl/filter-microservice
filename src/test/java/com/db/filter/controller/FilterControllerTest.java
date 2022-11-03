@@ -146,10 +146,10 @@ class FilterControllerTest {
         ChunckTrades chunckTrades = new ChunckTrades();
         chunckTrades.setTrades(inventedTrades);
 
-        given(filterService.filterList(chunckTrades)).willReturn(inventedTrades);
+        given(filterService.filterList(chunckTrades)).willReturn(chunckTrades);
 
         ResponseEntity actual = filterController.postFilterList(chunckTrades);
-        ResponseEntity expected = new ResponseEntity(inventedTrades,HttpStatus.OK);
+        ResponseEntity expected = new ResponseEntity(chunckTrades,HttpStatus.OK);
 
         assertEquals(expected.toString(),actual.toString());
     }
