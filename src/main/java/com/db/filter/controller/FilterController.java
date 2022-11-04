@@ -15,13 +15,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 public class FilterController {
-
-
-
     private final FilterOrquestrator filterOrquestrator;
-
-
-
 
     @PostMapping("/trades/filter")
     public ResponseEntity<Trade> postEnrichData(@RequestBody Trade enrichedData) {
@@ -45,6 +39,5 @@ public class FilterController {
 
         return new ResponseEntity<>(chunckTrades,HttpStatus.OK);
     }
-
 
 }
