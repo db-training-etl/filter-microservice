@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileWriterRepositoryTest {
 
     FileWriterRepository fileWriterRepository;
-    String FILE_PATH = "./src/main/resources/filtered-tradeName-";
+    String FILE_PATH = "./src/test/resources/filtered-tradeName-";
 
     @BeforeEach
     void setUp(){
@@ -35,6 +35,25 @@ class FileWriterRepositoryTest {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         File csvFile = new File(fileWriterRepository.FILE_PATH + dateFormat.format(data.getCobDate()) + ".csv");
+
+        assertTrue(csvFile.exists());
+    }
+
+    @Test
+    void GIVEN_Trade_WHEN_FileNotExist_THEN_CreateFIleAndAddInfoTrade() throws IOException {
+        Trade data = new Trade();
+        data.setId(1);
+        data.setAmount(0.0);
+        data.setCobDate(Date.from(Instant.now()));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        File csvFile = new File(fileWriterRepository.FILE_PATH + dateFormat.format(data.getCobDate()) + ".csv");
+
+        if(csvFile.exists()){
+            csvFile.delete();
+        }
+
+        fileWriterRepository.createFileWithFilteredData(data);
 
         assertTrue(csvFile.exists());
     }
