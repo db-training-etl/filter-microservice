@@ -14,14 +14,7 @@ import java.util.List;
 
 @Service
 public class TransformService {
-
-
-
-
-
-
     TransformPostRequests transformPostRequests;
-
 
     public TransformService(TransformPostRequests transformPostRequests) {
         this.transformPostRequests = transformPostRequests;
@@ -31,5 +24,10 @@ public class TransformService {
     public ResponseEntity postFilteredData(Trade trade) throws JsonProcessingException {
 
         return transformPostRequests.postFilteredData(trade);
+    }
+
+    public ResponseEntity postFilteredList(List<Trade> trades){
+
+        return transformPostRequests.postFilteredList(trades);
     }
 }

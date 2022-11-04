@@ -1,6 +1,7 @@
 package com.db.filter.controller;
 
 import com.db.filter.entity.Book;
+import com.db.filter.entity.ChunckTrades;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.FilterOrquestrator;
@@ -118,17 +119,18 @@ class FilterControllerTest {
     }
 
     @Test
-    void postEnrichData() {
+    void GIVEN_Trade_WHEN_AllOk_THEN_ReturnCreated() {
         given(filterService.filterData(inventedTrades.get(0))).willReturn(filterData(inventedTrades.get(0)));
 
         ResponseEntity<Trade> enrichDataResponse = filterController.postEnrichData(inventedTrades.get(0));
         ResponseEntity<Trade> expected = new ResponseEntity<Trade>(filterData(inventedTrades.get(0)), HttpStatus.CREATED);
 
         assertEquals(expected, enrichDataResponse);
+
     }
 
     @Test
-    void postEnrichDataThrowExceptionNoRequestedBody() {
+    void GIVEN_Trade_WHEN_TradeMissingID_THEN_ReturnBadRequest() {
         Trade emptyResponse = new Trade();
 
         given(filterService.filterData(emptyResponse)).willReturn(emptyResponse);
@@ -136,6 +138,20 @@ class FilterControllerTest {
         ResponseEntity<Trade> enrichDataResponse = filterController.postEnrichData(emptyResponse);
         ResponseEntity<Trade> expected = new ResponseEntity<Trade>(filterData(emptyResponse), HttpStatus.BAD_REQUEST);
         assertEquals(expected, enrichDataResponse);
+    }
+
+    @Test
+    void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnOk(){
+
+        ChunckTrades chunckTrades = new ChunckTrades();
+        chunckTrades.setTrades(inventedTrades);
+
+        given(filterService.filterList(chunckTrades)).willReturn(chunckTrades);
+
+        ResponseEntity actual = filterController.postFilterList(chunckTrades);
+        ResponseEntity expected = new ResponseEntity(chunckTrades,HttpStatus.OK);
+
+        assertEquals(expected.toString(),actual.toString());
     }
 
     private Trade filterData(Trade data) {
@@ -183,4 +199,6 @@ class FilterControllerTest {
 
         return data;
     }
+
+
 }

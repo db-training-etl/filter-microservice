@@ -1,9 +1,6 @@
 package com.db.filter.service;
 
-import com.db.filter.entity.Book;
-import com.db.filter.entity.Counterparty;
-import com.db.filter.entity.ExceptionLog;
-import com.db.filter.entity.Trade;
+import com.db.filter.entity.*;
 import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
@@ -28,9 +25,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 
-class FilterServiceTest {
+class FilterOrquestratorTest {
 
-    FilterOrquestrator filterService;
+    FilterOrquestrator filterOrquestrator;
 
 
     TransformService transformService;
@@ -49,7 +46,7 @@ class FilterServiceTest {
         transformService = mock(TransformService.class);
         exceptionsService = mock(ExceptionsService.class);
         fileWriterRepository = mock(FileWriterRepository.class);
-        filterService = new FilterOrquestrator(transformService,exceptionsService,fileWriterRepository);
+        filterOrquestrator = new FilterOrquestrator(transformService,exceptionsService,fileWriterRepository);
 
         inventedTrades = new ArrayList<>();
         counterparty = new Counterparty();
@@ -132,7 +129,7 @@ class FilterServiceTest {
         ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
         given(transformService.postFilteredData(filterData(inventedTrades.get(0)))).willReturn(result);
 
-        Trade actual = filterService.filterData(inventedTrades.get(0));
+        Trade actual = filterOrquestrator.filterData(inventedTrades.get(0));
         Trade expected = filterData(inventedTrades.get(0));
 
         assertEquals(expected,actual);
@@ -143,7 +140,7 @@ class FilterServiceTest {
         ResponseEntity<Trade> result = new ResponseEntity<>(HttpStatus.CREATED);
         given(transformService.postFilteredData(filterData(inventedTrades.get(1)))).willReturn(result);
 
-        Trade actual = filterService.filterData(inventedTrades.get(1));
+        Trade actual = filterOrquestrator.filterData(inventedTrades.get(1));
         Trade expected = filterData(inventedTrades.get(1));
 
         assertEquals(expected,actual);
@@ -160,7 +157,7 @@ class FilterServiceTest {
 
 
 
-        assertThrows(RuntimeException.class,()->filterService.filterData(data));
+        assertThrows(RuntimeException.class,()->filterOrquestrator.filterData(data));
     }
 
     @Test
@@ -171,7 +168,7 @@ class FilterServiceTest {
         given(transformService.postFilteredData(new Trade())).willReturn(result);
         given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
-        Trade actual = filterService.filterData(new Trade());
+        Trade actual = filterOrquestrator.filterData(new Trade());
         Trade expected = filterData(new Trade());
 
         assertEquals(expected,actual);
@@ -179,18 +176,66 @@ class FilterServiceTest {
     }
 
     @Test
-    void filterDataThrowJsonProcessingException() throws JsonProcessingException {
+    void GIVEN_Trade_WHEN_SendToTransformServiceAndJSONProcessingFail_THEN_ThrowRuntimeException() throws JsonProcessingException {
         given(transformService.postFilteredData(any())).willThrow(new JsonProcessingException("Error"){});
 
-        assertThrows(RuntimeException.class,()->filterService.filterData(inventedTrades.get(0)));
+        assertThrows(RuntimeException.class,()->filterOrquestrator.filterData(inventedTrades.get(0)));
+    }
+
+    @Test
+    void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnNoFilteredTrades() throws IOException {
+
+        ChunckTrades chunckTrades = new ChunckTrades();
+        chunckTrades.setTrades(inventedTrades);
+
+        ChunckTrades actual = filterOrquestrator.filterList(chunckTrades);
+        ChunckTrades expected = filterList(inventedTrades);
+
+        verify(fileWriterRepository,times(inventedTrades.size()- actual.getTrades().size())).createFileWithFilteredData(any());
+
+
+        assertEquals(expected.toString(),actual.toString());
+    }
+
+    @Test
+    void GIVEN_ListOfTrades_WHEN_CobDateMissing_THEN_ThrowRunTimeException() throws IOException {
+        List<Trade> tradeCobDateMissing = new ArrayList<>();
+        Trade trade = new Trade();
+        trade.setId(0);
+        trade.setAmount(0.0);
+        tradeCobDateMissing.add(trade);
+
+        ChunckTrades chunckTrades = new ChunckTrades();
+        chunckTrades.setTrades(tradeCobDateMissing);
+
+        doThrow(new IOException()).doNothing().when(fileWriterRepository).createFileWithFilteredData(any());
+
+        assertThrows(RuntimeException.class, () -> filterOrquestrator.filterList(chunckTrades));
+
+        verify(fileWriterRepository,times(tradeCobDateMissing.size())).createFileWithFilteredData(any());
+
+    }
+
+
+    private ChunckTrades filterList(List<Trade> data){
+        List<Trade> nonFiltered = new ArrayList<>();
+
+        for (Trade trade: data) {
+            if(trade.getAmount() > 0 && !"JPN".equals(trade.getCurrency())){
+                nonFiltered.add(trade);
+            }
+        }
+
+        ChunckTrades chunck = new ChunckTrades();
+        chunck.setTrades(nonFiltered);
+
+        return chunck;
     }
 
     private Trade filterData(Trade data) {
 
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-
         SimpleDateFormat destFormat = new SimpleDateFormat("yyyy-MM-dd");
-        HashMap<String, Object> filteredData = new HashMap<>();
+
 
         if (data==null || data.equals(new Trade())) {
             return new Trade();

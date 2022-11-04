@@ -1,4 +1,5 @@
-filepath: ./src/main/resources/filtered-tradeName-
+filepath:
+  src: "src/main/resources/filtered-tradeName-"
 urls:
-  exceptionservice: http://localhost:8069/
-  transformservice: http://localhost:8085/
+  exceptionservice: ${env.EXCEPTION_SERVICE_URL:http://localhost:8069/}
+  transformservice: ${env.TRANSFORM_DATA_SERVICE_URL:http://localhost:8085/}
