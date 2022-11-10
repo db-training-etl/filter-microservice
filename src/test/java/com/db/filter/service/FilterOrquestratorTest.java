@@ -1,5 +1,6 @@
 package com.db.filter.service;
 
+import com.db.filter.ExceptionHandlers.CustomException;
 import com.db.filter.entity.*;
 import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -210,7 +211,7 @@ class FilterOrquestratorTest {
 
         doThrow(new IOException()).doNothing().when(fileWriterRepository).createFileWithFilteredData(any());
 
-        assertThrows(RuntimeException.class, () -> filterOrquestrator.filterList(chunckTrades));
+        assertThrows(CustomException.class, () -> filterOrquestrator.filterList(chunckTrades));
 
         verify(fileWriterRepository,times(tradeCobDateMissing.size())).createFileWithFilteredData(any());
 

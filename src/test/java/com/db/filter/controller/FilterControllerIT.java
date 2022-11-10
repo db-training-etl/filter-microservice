@@ -1,5 +1,6 @@
 package com.db.filter.controller;
 
+import com.db.filter.ExceptionHandlers.CustomException;
 import com.db.filter.entity.Book;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
@@ -149,7 +150,7 @@ public class FilterControllerIT {
         //GIVEN
         ResponseEntity result = new ResponseEntity<>(new ArrayList<>(), HttpStatus.CREATED);
 
-        given(transformService.postFilteredData(null)).willThrow(new RuntimeException());
+        given(transformService.postFilteredData(null)).willThrow(new CustomException("","Rune Time Exception","","",Date.from(Instant.now())));
         given(exceptionsService.postException(any(),any(),any(),any(),any())).willReturn(result);
 
         //WHEN

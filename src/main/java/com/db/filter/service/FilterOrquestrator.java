@@ -1,5 +1,6 @@
 package com.db.filter.service;
 
+import com.db.filter.ExceptionHandlers.CustomException;
 import com.db.filter.entity.ChunckTrades;
 import com.db.filter.entity.Trade;
 import com.db.filter.repository.FileWriterRepository;
@@ -38,8 +39,8 @@ public class FilterOrquestrator {
             try {
                 fileWriterRepository.createFileWithFilteredData(trade);
             } catch (IOException e) {
-                sendException("","Rune Time Exception","","",Date.from(Instant.now()));
-                throw new RuntimeException(e);
+                sendException("","Run Time Exception","","",Date.from(Instant.now()));
+                throw new CustomException("","Run Time Exception","","",Date.from(Instant.now()));
             }
         }
 
@@ -66,7 +67,7 @@ public class FilterOrquestrator {
                 fileWriterRepository.createFileWithFilteredData(trade);
             } catch (IOException e) {
                 sendException("","Rune Time Exception","","",Date.from(Instant.now()));
-                throw new RuntimeException(e);
+                throw new CustomException("","Rune Time Exception","","",Date.from(Instant.now()));
             }
         }
 
@@ -86,7 +87,7 @@ public class FilterOrquestrator {
             transformService.postFilteredData(nonFilteredTrades);
         } catch (JsonProcessingException e) {
             sendException("","Runtime Exception","","",Date.from(Instant.now()));
-            throw new RuntimeException(e);
+            throw new CustomException("","Rune Time Exception","","",Date.from(Instant.now()));
         }
     }
 

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -33,7 +34,7 @@ public class FilterController {
     }
 
     @PostMapping("/trades/filter/list")
-    public ResponseEntity<ChunckTrades> postFilterList(@RequestBody ChunckTrades enrichedData){
+    public ResponseEntity<ChunckTrades> postFilterList(@RequestBody @Valid ChunckTrades enrichedData){
 
         ChunckTrades chunckTrades = filterOrquestrator.filterList(enrichedData);
 
