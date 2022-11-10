@@ -16,6 +16,9 @@ import java.time.Instant;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ExceptionInterceptorTest {
@@ -37,6 +40,8 @@ class ExceptionInterceptorTest {
 
         ResponseEntity actual = exception.handleCustomException(customException);
         ResponseEntity expected = new ResponseEntity<>(customException,HttpStatus.BAD_REQUEST);
+
+        verify(exceptionsService,times(1)).postException(any(),any(),any(),any(),any());
 
         assertEquals(expected,actual);
     }
