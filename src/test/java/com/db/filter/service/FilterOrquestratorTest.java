@@ -37,7 +37,6 @@ class FilterOrquestratorTest {
     FileWriterRepository fileWriterRepository;
 
 
-    ExceptionsService exceptionsService;
     List<Trade> inventedTrades;
     Counterparty counterparty;
     Book book;
@@ -45,9 +44,8 @@ class FilterOrquestratorTest {
     @BeforeEach
     void setUp(){
         transformService = mock(TransformService.class);
-        exceptionsService = mock(ExceptionsService.class);
         fileWriterRepository = mock(FileWriterRepository.class);
-        filterOrquestrator = new FilterOrquestrator(transformService,exceptionsService,fileWriterRepository);
+        filterOrquestrator = new FilterOrquestrator(transformService,fileWriterRepository);
 
         inventedTrades = new ArrayList<>();
         counterparty = new Counterparty();
@@ -167,7 +165,6 @@ class FilterOrquestratorTest {
 
         ResponseEntity<ExceptionLog> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
         given(transformService.postFilteredData(new Trade())).willReturn(result);
-        given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
         Trade actual = filterOrquestrator.filterData(new Trade());
         Trade expected = filterData(new Trade());
