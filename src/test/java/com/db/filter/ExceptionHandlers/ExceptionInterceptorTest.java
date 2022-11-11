@@ -1,5 +1,7 @@
 package com.db.filter.ExceptionHandlers;
 
+import com.db.filter.controller.FilterController;
+import com.db.filter.entity.ChunckTrades;
 import com.db.filter.repository.FileWriterRepository;
 import com.db.filter.service.ExceptionsService;
 import okhttp3.Response;
@@ -10,7 +12,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.Instant;
 import java.util.Date;
@@ -19,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class ExceptionInterceptorTest {
@@ -28,10 +37,16 @@ class ExceptionInterceptorTest {
     @Mock
     ExceptionsService exceptionsService;
 
+    @Mock
+    FilterController filterController;
+
+    MockMvc mockMvc;
+
     @BeforeEach
     void setUp(){
-
         exception = new ExceptionInterceptor(exceptionsService);
+
+        mockMvc = MockMvcBuilders.standaloneSetup(filterController).setControllerAdvice(new ExceptionInterceptor(exceptionsService)).build();
     }
 
     @Test
@@ -44,6 +59,18 @@ class ExceptionInterceptorTest {
         verify(exceptionsService,times(1)).postException(any(),any(),any(),any(),any());
 
         assertEquals(expected,actual);
+    }
+
+    @Test
+    void GIVEN_MethodArgumentNotValid_WHEN_ExceptionIsThrown_THEN_ExceptionInterceptorCatchEceptionAndCallExceptionService() throws Exception {
+
+        ChunckTrades chunck = new ChunckTrades();
+
+
+        mockMvc.perform(post("/trades/filter/list")
+                .content(chunck.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
     }
 
 }
