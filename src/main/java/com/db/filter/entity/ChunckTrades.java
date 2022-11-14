@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class ChunckTrades {
     @NotNull
-    int Id;
+    Integer Id;
     List<Trade> trades;
     int totalNumTrades;
 }

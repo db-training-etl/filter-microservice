@@ -4,6 +4,7 @@ import com.db.filter.controller.FilterController;
 import com.db.filter.entity.ChunckTrades;
 import com.db.filter.repository.FileWriterRepository;
 import com.db.filter.service.ExceptionsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,10 +43,12 @@ class ExceptionInterceptorTest {
 
     MockMvc mockMvc;
 
+    ObjectMapper mapper;
+
     @BeforeEach
     void setUp(){
         exception = new ExceptionInterceptor(exceptionsService);
-
+        mapper = new ObjectMapper();
         mockMvc = MockMvcBuilders.standaloneSetup(filterController).setControllerAdvice(new ExceptionInterceptor(exceptionsService)).build();
     }
 
@@ -66,11 +69,11 @@ class ExceptionInterceptorTest {
 
         ChunckTrades chunck = new ChunckTrades();
 
-
         mockMvc.perform(post("/trades/filter/list")
-                .content(chunck.toString())
+                .content(mapper.writeValueAsString(chunck))
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
+        verify(exceptionsService,times(1)).postException(any(),any(),any(),any(),any());
     }
 
 }

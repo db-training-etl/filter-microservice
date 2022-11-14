@@ -31,6 +31,6 @@ public class ExceptionInterceptor extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         exceptionsService.postException("Method Argument Not Valid", "Method Argument Not Valid", ex.getMessage(), ex.getStackTrace().toString(), Date.from(Instant.now()));
-        return super.handleMethodArgumentNotValid(ex, headers, status, request);
+        return super.handleMethodArgumentNotValid(ex, headers, HttpStatus.BAD_REQUEST, request);
     }
 }
