@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.time.Instant;
 import java.util.Date;
@@ -30,7 +31,7 @@ public class ExceptionInterceptor extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        exceptionsService.postException("Method Argument Not Valid", "Method Argument Not Valid", ex.getMessage(), ex.getStackTrace().toString(), Date.from(Instant.now()));
+        exceptionsService.postException("Method Argument Not Valid", "Method Argument Not Valid", ex.getMessage(), ExceptionUtils.getStackTrace(ex), Date.from(Instant.now()));
         return super.handleMethodArgumentNotValid(ex, headers, HttpStatus.BAD_REQUEST, request);
     }
 }
