@@ -1,5 +1,5 @@
 package com.db.filter.controller;
-import com.db.filter.entity.ChunckTrades;
+import com.db.filter.entity.ChunkTrades;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.FilterOrquestrator;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
 
 
 @RestController
@@ -34,11 +33,11 @@ public class FilterController {
     }
 
     @PostMapping("/trades/filter/list")
-    public ResponseEntity<ChunckTrades> postFilterList(@RequestBody @Valid ChunckTrades enrichedData){
+    public ResponseEntity<ChunkTrades> postFilterList(@RequestBody @Valid ChunkTrades enrichedData){
 
-        ChunckTrades chunckTrades = filterOrquestrator.filterList(enrichedData);
+        ChunkTrades chunkTrades = filterOrquestrator.filterList(enrichedData);
 
-        return new ResponseEntity<>(chunckTrades,HttpStatus.OK);
+        return new ResponseEntity<>(chunkTrades,HttpStatus.OK);
     }
 
 }

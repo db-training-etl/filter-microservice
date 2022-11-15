@@ -7,9 +7,10 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
-public class ChunckTrades {
+public class ChunkTrades {
     @NotNull
     Integer Id;
+    Integer size;
     List<Trade> trades;
-    int totalNumTrades;
+    Integer totalNumTrades;
 }

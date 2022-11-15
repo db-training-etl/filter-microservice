@@ -1,24 +1,19 @@
 package com.db.filter.ExceptionHandlers;
 
 import com.db.filter.controller.FilterController;
-import com.db.filter.entity.ChunckTrades;
-import com.db.filter.repository.FileWriterRepository;
+import com.db.filter.entity.ChunkTrades;
 import com.db.filter.service.ExceptionsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.Instant;
 import java.util.Date;
@@ -67,7 +62,7 @@ class ExceptionInterceptorTest {
     @Test
     void GIVEN_MethodArgumentNotValid_WHEN_ExceptionIsThrown_THEN_ExceptionInterceptorCatchEceptionAndCallExceptionService() throws Exception {
 
-        ChunckTrades chunck = new ChunckTrades();
+        ChunkTrades chunck = new ChunkTrades();
 
         mockMvc.perform(post("/trades/filter/list")
                 .content(mapper.writeValueAsString(chunck))

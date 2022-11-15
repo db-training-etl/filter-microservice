@@ -183,11 +183,11 @@ class FilterOrquestratorTest {
     @Test
     void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnNoFilteredTrades() throws IOException {
 
-        ChunckTrades chunckTrades = new ChunckTrades();
-        chunckTrades.setTrades(inventedTrades);
+        ChunkTrades chunkTrades = new ChunkTrades();
+        chunkTrades.setTrades(inventedTrades);
 
-        ChunckTrades actual = filterOrquestrator.filterList(chunckTrades);
-        ChunckTrades expected = filterList(inventedTrades);
+        ChunkTrades actual = filterOrquestrator.filterList(chunkTrades);
+        ChunkTrades expected = filterList(inventedTrades);
 
         verify(fileWriterRepository,times(inventedTrades.size()- actual.getTrades().size())).createFileWithFilteredData(any());
 
@@ -203,19 +203,19 @@ class FilterOrquestratorTest {
         trade.setAmount(0.0);
         tradeCobDateMissing.add(trade);
 
-        ChunckTrades chunckTrades = new ChunckTrades();
-        chunckTrades.setTrades(tradeCobDateMissing);
+        ChunkTrades chunkTrades = new ChunkTrades();
+        chunkTrades.setTrades(tradeCobDateMissing);
 
         doThrow(new IOException()).doNothing().when(fileWriterRepository).createFileWithFilteredData(any());
 
-        assertThrows(CustomException.class, () -> filterOrquestrator.filterList(chunckTrades));
+        assertThrows(CustomException.class, () -> filterOrquestrator.filterList(chunkTrades));
 
         verify(fileWriterRepository,times(tradeCobDateMissing.size())).createFileWithFilteredData(any());
 
     }
 
 
-    private ChunckTrades filterList(List<Trade> data){
+    private ChunkTrades filterList(List<Trade> data){
         List<Trade> nonFiltered = new ArrayList<>();
 
         for (Trade trade: data) {
@@ -224,7 +224,7 @@ class FilterOrquestratorTest {
             }
         }
 
-        ChunckTrades chunck = new ChunckTrades();
+        ChunkTrades chunck = new ChunkTrades();
         chunck.setTrades(nonFiltered);
 
         return chunck;
