@@ -1,7 +1,7 @@
 package com.db.filter.controller;
 
 import com.db.filter.entity.Book;
-import com.db.filter.entity.ChunckTrades;
+import com.db.filter.entity.ChunkTrades;
 import com.db.filter.entity.Counterparty;
 import com.db.filter.entity.Trade;
 import com.db.filter.service.FilterOrquestrator;
@@ -143,13 +143,13 @@ class FilterControllerTest {
     @Test
     void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnOk(){
 
-        ChunckTrades chunckTrades = new ChunckTrades();
-        chunckTrades.setTrades(inventedTrades);
+        ChunkTrades chunkTrades = new ChunkTrades();
+        chunkTrades.setTrades(inventedTrades);
 
-        given(filterService.filterList(chunckTrades)).willReturn(chunckTrades);
+        given(filterService.filterList(chunkTrades)).willReturn(chunkTrades);
 
-        ResponseEntity actual = filterController.postFilterList(chunckTrades);
-        ResponseEntity expected = new ResponseEntity(chunckTrades,HttpStatus.OK);
+        ResponseEntity actual = filterController.postFilterList(chunkTrades);
+        ResponseEntity expected = new ResponseEntity(chunkTrades,HttpStatus.OK);
 
         assertEquals(expected.toString(),actual.toString());
     }

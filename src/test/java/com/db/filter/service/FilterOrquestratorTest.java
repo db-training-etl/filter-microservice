@@ -1,5 +1,6 @@
 package com.db.filter.service;
 
+import com.db.filter.ExceptionHandlers.CustomException;
 import com.db.filter.entity.*;
 import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,7 +37,6 @@ class FilterOrquestratorTest {
     FileWriterRepository fileWriterRepository;
 
 
-    ExceptionsService exceptionsService;
     List<Trade> inventedTrades;
     Counterparty counterparty;
     Book book;
@@ -44,9 +44,8 @@ class FilterOrquestratorTest {
     @BeforeEach
     void setUp(){
         transformService = mock(TransformService.class);
-        exceptionsService = mock(ExceptionsService.class);
         fileWriterRepository = mock(FileWriterRepository.class);
-        filterOrquestrator = new FilterOrquestrator(transformService,exceptionsService,fileWriterRepository);
+        filterOrquestrator = new FilterOrquestrator(transformService,fileWriterRepository);
 
         inventedTrades = new ArrayList<>();
         counterparty = new Counterparty();
@@ -166,7 +165,6 @@ class FilterOrquestratorTest {
 
         ResponseEntity<ExceptionLog> expectedResultFromService = new ResponseEntity<>(HttpStatus.ACCEPTED);
         given(transformService.postFilteredData(new Trade())).willReturn(result);
-        given(exceptionsService.postException("","","","",Date.from(Instant.now()))).willReturn(expectedResultFromService);
 
         Trade actual = filterOrquestrator.filterData(new Trade());
         Trade expected = filterData(new Trade());
@@ -185,11 +183,11 @@ class FilterOrquestratorTest {
     @Test
     void GIVEN_ListOfTrades_WHEN_AllOk_THEN_ReturnNoFilteredTrades() throws IOException {
 
-        ChunckTrades chunckTrades = new ChunckTrades();
-        chunckTrades.setTrades(inventedTrades);
+        ChunkTrades chunkTrades = new ChunkTrades();
+        chunkTrades.setTrades(inventedTrades);
 
-        ChunckTrades actual = filterOrquestrator.filterList(chunckTrades);
-        ChunckTrades expected = filterList(inventedTrades);
+        ChunkTrades actual = filterOrquestrator.filterList(chunkTrades);
+        ChunkTrades expected = filterList(inventedTrades);
 
         verify(fileWriterRepository,times(inventedTrades.size()- actual.getTrades().size())).createFileWithFilteredData(any());
 
@@ -205,19 +203,19 @@ class FilterOrquestratorTest {
         trade.setAmount(0.0);
         tradeCobDateMissing.add(trade);
 
-        ChunckTrades chunckTrades = new ChunckTrades();
-        chunckTrades.setTrades(tradeCobDateMissing);
+        ChunkTrades chunkTrades = new ChunkTrades();
+        chunkTrades.setTrades(tradeCobDateMissing);
 
         doThrow(new IOException()).doNothing().when(fileWriterRepository).createFileWithFilteredData(any());
 
-        assertThrows(RuntimeException.class, () -> filterOrquestrator.filterList(chunckTrades));
+        assertThrows(CustomException.class, () -> filterOrquestrator.filterList(chunkTrades));
 
         verify(fileWriterRepository,times(tradeCobDateMissing.size())).createFileWithFilteredData(any());
 
     }
 
 
-    private ChunckTrades filterList(List<Trade> data){
+    private ChunkTrades filterList(List<Trade> data){
         List<Trade> nonFiltered = new ArrayList<>();
 
         for (Trade trade: data) {
@@ -226,7 +224,7 @@ class FilterOrquestratorTest {
             }
         }
 
-        ChunckTrades chunck = new ChunckTrades();
+        ChunkTrades chunck = new ChunkTrades();
         chunck.setTrades(nonFiltered);
 
         return chunck;
