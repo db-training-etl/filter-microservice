@@ -1,7 +1,7 @@
 package com.db.filter.service;
 
 import com.db.filter.ExceptionHandlers.CustomException;
-import com.db.filter.entity.ChunckTrades;
+import com.db.filter.entity.ChunkTrades;
 import com.db.filter.entity.Trade;
 import com.db.filter.repository.FileWriterRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,7 +41,7 @@ public class FilterOrquestrator {
         return trade;
     }
 
-    public ChunckTrades filterList(ChunckTrades enrichedTrades) {
+    public ChunkTrades filterList(ChunkTrades enrichedTrades) {
 
         List<Trade> nonFiltered = new ArrayList<>();
         List<Trade> filtered = new ArrayList<>();
