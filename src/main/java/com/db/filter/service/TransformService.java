@@ -3,15 +3,13 @@ package com.db.filter.service;
 import com.db.filter.entity.Trade;
 import com.db.filter.repository.TransformPostRequests;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class TransformService {
     TransformPostRequests transformPostRequests;
@@ -22,12 +20,12 @@ public class TransformService {
     }
 
     public ResponseEntity postFilteredData(Trade trade) throws JsonProcessingException {
-
+        log.info("---------- SEND TRADE TO TRANSFORM SERVICE ----------");
         return transformPostRequests.postFilteredData(trade);
     }
 
     public ResponseEntity postFilteredList(List<Trade> trades){
-
+        log.info("---------- SEND LIST OF TRADE TO TRANSFORM SERVICE ----------");
         return transformPostRequests.postFilteredList(trades);
     }
 }
