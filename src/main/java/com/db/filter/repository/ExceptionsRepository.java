@@ -1,6 +1,7 @@
 package com.db.filter.repository;
 
 import com.db.filter.entity.ExceptionLog;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
 import java.util.HashMap;
+@Slf4j
 @Repository
 public class ExceptionsRepository implements ExceptionsPostRequests {
 
@@ -35,7 +37,7 @@ public class ExceptionsRepository implements ExceptionsPostRequests {
         requestBody.put("message",message);
         requestBody.put("trace",trace);
         requestBody.put("cobDate",cobDate);
-
+        log.info("---------- SEND EXCEPTION to EXCEPTIONSERVICE ----------");
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path("exceptions").build())
                 .body(BodyInserters.fromValue(requestBody))

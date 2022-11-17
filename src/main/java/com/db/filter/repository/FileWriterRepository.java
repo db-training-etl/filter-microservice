@@ -3,6 +3,7 @@ package com.db.filter.repository;
 import com.db.filter.entity.Trade;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-
+@Slf4j
 @NoArgsConstructor
 @Repository
 @AllArgsConstructor
@@ -22,6 +23,7 @@ public class FileWriterRepository {
 
 
     public void createFileWithFilteredData(Trade data) throws IOException {
+        log.info("---------- SAVE TRADE into CSV ----------");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         File csvFile = new File(FILE_PATH + dateFormat.format(data.getCobDate()) + ".csv");
