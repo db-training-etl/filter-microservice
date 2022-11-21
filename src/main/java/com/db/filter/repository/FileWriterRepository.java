@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.stream.Stream;
 
 @Slf4j
 @NoArgsConstructor
@@ -49,13 +50,12 @@ public class FileWriterRepository {
                 "cobDate", "amount", "tradeTax", "book", "counterparty"};
 
         StringBuilder line = new StringBuilder();
-        for (int i = 0; i < columns.length; i++) {
-            line.append(columns[i]);
-            if(i!= columns.length - 1){
-                line.append(';');
-            }
-        }
+
+        String header = Stream.of(columns).reduce("",(finalString,element) -> finalString + element + ";");
+
+        line.append(header);
         line.append('\n');
+
         writerHeader.write(line.toString());
 
         writerHeader.close();
