@@ -68,16 +68,6 @@ public class FilterOrquestrator {
             }
         });
 
-        /*for (Trade trade: filtered) {
-            try {
-                log.info("---------- SEND FILTERED TRADES TO BE SAVED INTO CSV ----------");
-                fileWriterRepository.createFileWithFilteredData(trade);
-            } catch (IOException e) {
-                log.info("---------- IOEXCEPTION ----------");
-                throw new CustomException("","Rune Time Exception","","",Date.from(Instant.now()));
-            }
-        }*/
-
         transformService.postFilteredList(nonFiltered);
 
         ChunkTrades nonFilteredTrades = new ChunkTrades();
