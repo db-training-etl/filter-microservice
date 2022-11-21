@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -48,18 +50,15 @@ public class FilterOrquestrator {
 
     public ChunkTrades filterList(ChunkTrades enrichedTrades) {
 
-        List<Trade> nonFiltered = new ArrayList<>();
-        List<Trade> filtered = new ArrayList<>();
+        List<Trade> filtered = enrichedTrades.getTrades().stream()
+                                 .filter(trade -> checkIfTradeIsFiltered(trade))
+                                 .collect(Collectors.toList());
 
-        for (Trade trade: enrichedTrades.getTrades()) {
-            if(checkIfTradeIsFiltered(trade)){
-                filtered.add(trade);
-            }else{
-                nonFiltered.add(trade);
-            }
-        }
+        List<Trade> nonFiltered = enrichedTrades.getTrades().stream()
+                                    .filter(trade -> !checkIfTradeIsFiltered(trade))
+                                    .collect(Collectors.toList());
 
-        for (Trade trade: filtered) {
+        filtered.stream().forEach(trade -> {
             try {
                 log.info("---------- SEND FILTERED TRADES TO BE SAVED INTO CSV ----------");
                 fileWriterRepository.createFileWithFilteredData(trade);
@@ -67,7 +66,7 @@ public class FilterOrquestrator {
                 log.info("---------- IOEXCEPTION ----------");
                 throw new CustomException("","Rune Time Exception","","",Date.from(Instant.now()));
             }
-        }
+        });
 
         transformService.postFilteredList(nonFiltered);
 
