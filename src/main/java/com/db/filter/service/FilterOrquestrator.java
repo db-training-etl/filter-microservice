@@ -58,8 +58,7 @@ public class FilterOrquestrator {
                                     .filter(trade -> !checkIfTradeIsFiltered(trade))
                                     .collect(Collectors.toList());
 
-
-        for (Trade trade: filtered) {
+        filtered.stream().forEach(trade -> {
             try {
                 log.info("---------- SEND FILTERED TRADES TO BE SAVED INTO CSV ----------");
                 fileWriterRepository.createFileWithFilteredData(trade);
@@ -67,7 +66,17 @@ public class FilterOrquestrator {
                 log.info("---------- IOEXCEPTION ----------");
                 throw new CustomException("","Rune Time Exception","","",Date.from(Instant.now()));
             }
-        }
+        });
+
+        /*for (Trade trade: filtered) {
+            try {
+                log.info("---------- SEND FILTERED TRADES TO BE SAVED INTO CSV ----------");
+                fileWriterRepository.createFileWithFilteredData(trade);
+            } catch (IOException e) {
+                log.info("---------- IOEXCEPTION ----------");
+                throw new CustomException("","Rune Time Exception","","",Date.from(Instant.now()));
+            }
+        }*/
 
         transformService.postFilteredList(nonFiltered);
 
